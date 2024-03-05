@@ -21,7 +21,11 @@ from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from reversion.admin import VersionAdmin
 
-from base.models import BaseModel, Account
+from base.models import (
+    User,
+    AppIcon,
+    BaseModel
+)
 
 
 def custom_titled_filter(title):
@@ -102,6 +106,7 @@ class BaseAdmin(VersionAdmin):
     }
     formfield_querysets: Dict[str, Callable[[], QuerySet]] = {}
     formfield_select_formats = {}
+
     _cached_queries = None
 
     def get_list_display(self, request):
@@ -294,11 +299,19 @@ class BaseAdmin(VersionAdmin):
             inline_cached_queries[field_name] = [
                 (o.pk, select_format(o)) for o in queryset().all()]
 
+        field_names = inline_cached_queries.keys()
         for inline in self.get_inline_instances(request, obj):
+            model = inline.model
+            for field_name in field_names:
+                field = getattr(model, field_name, None)
+                if field and field.field.blank:
+                    inline_cached_queries[field_name] = [
+                        (None, '----')] + inline_cached_queries[field_name]
+
             inline._cached_queries = inline_cached_queries
             yield inline.get_formset(request, obj), inline
 
-    def get_formfield_querysets(self) -> Dict[str, Callable[[], QuerySet]]:
+    def get_formfield_querysets(self, object_id) -> Dict[str, Callable[[], QuerySet]]:
         return self.formfield_querysets
 
     def get_formfield_select_formats(self):
@@ -308,20 +321,28 @@ class BaseAdmin(VersionAdmin):
         return self.get_formfield_select_formats().get(field_name, str)
 
     def _changeform_view(self, request, object_id, form_url, extra_context):
-        self._cache_queries()
+        self._cache_queries(object_id)
         return super(BaseAdmin, self)._changeform_view(request, object_id, form_url, extra_context)
 
-    def _cache_queries(self):
+    def _cache_queries(self, object_id):
         self._cached_queries = {}
-        for field_name, queryset in self.get_formfield_querysets().items():
+        for field_name, queryset in self.get_formfield_querysets(object_id).items():
             if not isinstance(queryset, Callable):
                 raise TypeError(
                     f'The formfield_queryset "{field_name}" under {self.__class__.__name__} should be callable. '
                     'Either add lambda beforehand or make it a function.'
                 )
+            blank = False
+            blank_filter = [
+                field.blank for field in self.opts.fields if field.name == field_name]
+            if len(blank_filter):
+                blank = blank_filter[0]
             select_format = self.get_formfield_select_format(field_name)
             self._cached_queries[field_name] = [
                 (o.pk, select_format(o)) for o in queryset().all()]
+            if blank:
+                self._cached_queries[field_name] = [
+                    (None, '----')] + self._cached_queries[field_name]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         field = super(BaseAdmin, self).formfield_for_manytomany(
@@ -419,10 +440,11 @@ class UserChangeForm(BaseUserChangeForm):
     )
 
 
-@admin.register(Account)
+@admin.register(User)
 class UserAdmin(BaseUserAdmin, BaseAdmin):
     search_fields = ('username', 'first_name', 'last_name',)
-    list_fields = ('username', 'first_name', 'last_name',)
+    list_fields = (
+        'username', 'first_name', 'last_name', 'username',)
     list_filter = ('is_active', 'groups',)
     admin_priority = 7
     edit_fields = (
@@ -436,17 +458,8 @@ class UserAdmin(BaseUserAdmin, BaseAdmin):
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions',),
         }),
         ('Important dates', {
-            'fields': ('last_login', 'date_joined')
+            'fields': ('last_login', 'date_joined',)
         }),
-    )
-    add_fieldsets = (
-        (
-            None,
-            {
-                'classes': ('wide',),
-                'fields': ('email', 'first_name', 'last_name', 'password1', 'password2'),
-            },
-        ),
     )
     readonly_fields = ('last_login', 'date_joined',
                        'created_at', 'updated_at',)
@@ -454,6 +467,15 @@ class UserAdmin(BaseUserAdmin, BaseAdmin):
         'groups': lambda: Group.objects.all(),
         'user_permissions': lambda: Permission.objects.prefetch_related('content_type'),
     }
+    add_fieldsets = (
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': ('username', 'email', 'first_name', 'last_name', 'password1', 'password2'),
+            },
+        ),
+    )
     form = UserChangeForm
 
     def get_edit_fields(self, request, obj) -> Union[
@@ -475,3 +497,20 @@ class UserAdmin(BaseUserAdmin, BaseAdmin):
         if self.has_add_permission(request):
             return super(UserAdmin, self).get_queryset(request)
         return super(UserAdmin, self).get_queryset(request).filter(pk=request.user.pk)
+
+
+@admin.register(AppIcon)
+class AppIconAdmin(BaseAdmin):
+    search_fields = ('name', 'icon',)
+    list_fields = ('name', 'icon',)
+    list_filter = ('name',)
+    admin_priority = 8
+    edit_fields = (
+        ('Icon Information', {
+            'fields': ('name', 'icon',),
+        }),
+        ('Dimensions', {
+            'fields': ('width', 'height',),
+        }),
+    )
+    readonly_fields = ('width', 'height', 'created_at', 'updated_at',)

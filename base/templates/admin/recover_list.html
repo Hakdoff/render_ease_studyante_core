@@ -1,0 +1,68 @@
+{% extends "admin_interface:admin/base_site.html" %}
+{% load i18n l10n admin_urls static %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo;
+        <a href="{% url 'admin:app_list' opts.app_label %}">{{ opts.app_config.verbose_name }}</a> &rsaquo;
+        <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+        {% blocktrans with opts.verbose_name_plural|escape as name %}Recover deleted {{ name }}{% endblocktrans %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="results">
+        <table id="result_list">
+            <thead>
+            <tr>
+                <th scope="col" style="text-align: center">
+                    <div class="text"><span>Deleted At</span></div>
+                    <div class="clear"></div>
+                </th>
+                <th scope="col" style="text-align: center">
+                    <div class="text"><span>Item</span></div>
+                    <div class="clear"></div>
+                </th>
+                <th scope="col" style="text-align: center">
+                    <div class="text"><span>Delete Remarks</span></div>
+                    <div class="clear"></div>
+                </th>
+                <th scope="col" style="text-align: center">
+                    <div class="text"><span>Deleted By</span></div>
+                    <div class="clear"></div>
+                </th>
+                <th scope="col" style="text-align: center">
+                    <div class="text"><span>Action</span></div>
+                    <div class="clear"></div>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+                <tr style="text-align: center">
+                    <td>{{ result.deleted_at }}</td>
+                    <td>{{ result }}</td>
+                    <td>
+                        {{ result.delete_remarks }}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin:base_user_change' result.deleted_by_id %}" target="_blank">
+                            account #{{ result.deleted_by_id }}
+                        </a>
+                    </td>
+                    <td>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" value="{{ result.pk }}" name="pk">
+                            <input type="submit" value="Undelete" name="_continue">
+                        </form>
+                    </td>
+                </tr>
+                </tr>
+            {% empty %}
+                <tr style="text-align: center"><td colspan="5">No deleted items for the past 30 days.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

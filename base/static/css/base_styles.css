@@ -1,0 +1,35 @@
+#changelist-filter {
+    padding: 12px;
+    box-shadow: 0 0 8px #777;
+    border-radius: 16px;
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+#changelist-filter > h2 {
+    background: none !important;
+    text-transform: none !important;
+    font-size: 22px !important;
+    color: black !important;
+}
+
+fieldset.module {
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: 0 0 8px #777;
+    border-radius: 16px;
+}
+
+fieldset.module > h2 {
+    background: none !important;
+    font-size: 22px;
+    color: black !important;
+}
+
+fieldset.module > .form-row {
+    border-bottom: none !important;
+}
+
+fieldset.module > .form-row > .fieldBox {
+    border-top: none !important;
+}

@@ -50,7 +50,7 @@ class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True, default=None)
-    deleted_by_id = models.IntegerField(blank=True, null=True)
+    deleted_by_id = models.UUIDField(blank=True, null=True)
 
     update_remarks = models.TextField(
         null=True,
@@ -98,9 +98,18 @@ class UserManager(OldUserManager, SoftDeletionManager):
     pass
 
 
-class Account(AbstractUser, BaseModel):
-    class Meta:
-        verbose_name = 'Account'
-        verbose_name_plural = 'Account'
-
+class User(AbstractUser, BaseModelWithUUID):
     objects = UserManager()
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class AppIcon(BaseModel):
+    name = models.CharField(max_length=32)
+    width = models.IntegerField()
+    height = models.IntegerField()
+    icon = models.ImageField(upload_to='app_icons', width_field='width', height_field='height')
+
+    def __str__(self):
+        return self.name

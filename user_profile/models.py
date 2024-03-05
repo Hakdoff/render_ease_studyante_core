@@ -1,5 +1,5 @@
 from django.db import models
-from base.models import BaseModelWithUUID, Account
+from base.models import BaseModelWithUUID, User
 from department.models import Department
 
 
@@ -18,7 +18,7 @@ class BaseProfile(BaseModelWithUUID):
     ]
 
     user = models.OneToOneField(
-        Account, on_delete=models.CASCADE)
+        User, on_delete=models.CASCADE)
     address = models.TextField(blank=False, null=False)
 
     contact_number = models.CharField(max_length=25)
