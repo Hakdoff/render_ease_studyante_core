@@ -1,0 +1,142 @@
+{% extends "admin_interface:admin/base_site.html" %}
+
+{% load i18n l10n admin_urls static admin_interface_tags %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    {% get_admin_interface_theme as theme %}
+
+    <style type="text/css">
+        #site-name {
+            font-weight: 600 !important;
+        }
+
+        #user-tools {
+            font-weight: 500 !important;
+        }
+
+        .breadcrumbs {
+            font-weight: 600 !important;
+        }
+
+        fieldset.module.aligned.wide > h2 {
+            font-weight: bolder !important;
+        }
+
+        #user-tools strong {
+            font-weight: 600 !important;
+        }
+
+        .button, input[type=submit], input[type=button], .submit-row input, a.button {
+            color: {{ theme.css_save_button_text_color }};
+            border-radius: 14px;
+        }
+
+        .module {
+            margin-bottom: 0;
+        }
+
+        #nav-sidebar .module tr {
+            background-color: {{ theme.css_save_button_background_color }};
+        }
+
+        #nav-sidebar .module tr.current-model {
+            background-color: {{ theme.css_save_button_background_color }};
+        }
+
+        #nav-sidebar .module caption {
+            margin: 0 -40px;
+            font-size: 14px;
+            text-transform: none;
+            padding-left: 0 !important;
+            background-color: {{ theme.css_save_button_background_color }};
+            padding-right: 20px !important;
+        }
+
+        #nav-sidebar .module caption .section {
+            margin-left: 40px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        #nav-sidebar .module caption .section span.app-name {
+            flex: 1;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        #nav-sidebar .module caption .section span.app-select {
+            flex: 0;
+            margin-top: -10px;
+        }
+
+        #nav-sidebar .module caption .section span.app-select::after {
+            text-transform: lowercase;
+            content: "\2304";
+            font-size: 20px;
+        }
+
+        #nav-sidebar .module.current-app caption {
+            background-color: {{ theme.css_save_button_background_hover_color }} !important;
+        }
+
+        #nav-sidebar .module.current-app caption .section {
+            color: {{ theme.css_save_button_text_color }} !important;
+        }
+
+        #nav-sidebar .module td, #nav-sidebar .module th, #nav-sidebar .module caption {
+            border-width: 0;
+            border-radius: 0 !important;
+        }
+
+        .admin-interface #nav-sidebar .module a:link, .admin-interface #nav-sidebar .module a:visited {
+            font-weight: 500 !important;
+            color: {{ theme.css_save_button_text_color }};
+            text-decoration: none;
+        }
+
+        .admin-interface #nav-sidebar .module a:hover {
+            color: {{ theme.css_generic_link_hover_color }};
+        }
+
+        #nav-sidebar .module tr.current-model a {
+            color: {{ theme.css_generic_link_hover_color }} !important;
+        }
+
+        #nav-sidebar {
+            background-color: {{ theme.css_save_button_background_color }};
+        }
+
+        @media (min-width: 1280px) {
+            .admin-interface #main.shifted > #nav-sidebar {
+                flex: 0 0 360px;
+                margin-left: -40px;
+                padding-left: 40px;
+            }
+            .admin-interface #toggle-nav-sidebar,
+            .admin-interface #toggle-nav-sidebar:focus,
+            .admin-interface #toggle-nav-sidebar:hover {
+                background-color: {{ theme.css_save_button_background_color }};
+                color: {{ theme.css_save_button_text_color }};
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/base_styles.css' %}">
+{% endblock %}
+
+{% block userlinks %}
+    {% if site_url %}
+        <a href="{{ site_url }}">{% translate 'My Profile' %}</a> /
+    {% endif %}
+    {% if user.is_active and user.is_staff %}
+        {% url 'django-admindocs-docroot' as docsroot %}
+        {% if docsroot %}
+            <a href="{{ docsroot }}">{% translate 'Documentation' %}</a> /
+        {% endif %}
+    {% endif %}
+    {% if user.has_usable_password %}
+        <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a> /
+    {% endif %}
+    <a href="{% url 'admin:logout' %}">{% translate 'Log out' %}</a>
+{% endblock %}
