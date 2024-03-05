@@ -57,3 +57,10 @@ class Teacher(BaseProfile):
 
     def __str__(self):
         return f'{self.user.last_name}- {self.user.first_name}'
+
+
+class Parent(BaseProfile):
+    students = models.ForeignKey(Student, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user.last_name}- {self.user.first_name}'
