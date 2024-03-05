@@ -96,7 +96,6 @@ class StudentAdmin(admin.ModelAdmin):
             ],
         }),
     )
-
     def get_form(self, request, obj=None, **kwargs):
         form = super(StudentAdmin, self).get_form(request, obj, **kwargs)
         if obj is not None:
@@ -105,6 +104,7 @@ class StudentAdmin(admin.ModelAdmin):
                 form.base_fields['last_name'].initial = obj.user.last_name
                 form.base_fields['email'].initial = obj.user.email
         return form
+
 
 
 @admin.register(Teacher)

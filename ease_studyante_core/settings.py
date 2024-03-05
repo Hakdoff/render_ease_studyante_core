@@ -62,6 +62,8 @@ INSTALLED_APPS = [
     'base',
     'user_profile',
     'department',
+    'section',
+    'subject',
 ]
 
 MIDDLEWARE = [
