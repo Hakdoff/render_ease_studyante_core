@@ -1,65 +1,63 @@
 {% load i18n base_atmos_tags %}
 <button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar"
-        aria-label="{% translate 'Toggle navigation' %}"></button>
+    aria-label="{% translate 'Toggle navigation' %}"></button>
 <nav class="sticky" id="nav-sidebar">
     {% if available_apps %}
-        {% get_app_icons as app_icons %}
-        {% for app in available_apps %}
-            <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
-                <table>
-                    <caption>
-                        {% if app.app_url in request.path %}
-                            <div class="section">
-                                <img src="{{ app_icons|dict_key:app.app_label }}" alt="{{ app.name }}" width="16"
-                                     height="16"/>
-                                <span class="app-name"
-                                      title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
-                                {{ app.name }}
-                            </span>
-                            </div>
-                        {% else %}
-                            <a href="{{ app.models.0.admin_url }}" class="section"
-                               title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
-                                <img src="{{ app_icons|dict_key:app.app_label }}" alt="{{ app.name }}" width="16"
-                                     height="16"/>
-                                <span class="app-name">
-                                {{ app.name }}
-                            </span>
-                                {% if app.models %}
-                                    <span class="app-select"></span>
-                                {% endif %}
-                            </a>
-                        {% endif %}
-                    </caption>
-                    {% if app.app_url in request.path %}
-                        {% for model in app.models %}
-                            <tr class="model-
+    {% get_app_icons as app_icons %}
+    {% for app in available_apps %}
+    <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
+        <table>
+            <caption>
+                {% if app.app_url in request.path %}
+                <div class="section">
+                    <img src="{{ app_icons|dict_key:app.app_label }}" alt="{{ app.name }}" width="16" height="16" />
+                    <span class="app-name"
+                        title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                        {{ app.name }}
+                    </span>
+                </div>
+                {% else %}
+                <a href="{{ app.models.0.admin_url }}" class="section"
+                    title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                    <img src="{{ app_icons|dict_key:app.app_label }}" alt="{{ app.name }}" width="16" height="16" />
+                    <span class="app-name">
+                        {{ app.name }}
+                    </span>
+                    {% if app.models %}
+                    <span class="app-select"></span>
+                    {% endif %}
+                </a>
+                {% endif %}
+            </caption>
+            {% if app.app_url in request.path %}
+            {% for model in app.models %}
+            <tr
+                class="model-
 
 
 
                                     {{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
-                                {% if model.admin_url %}
-                                    <th scope="row"><a href="{{ model.admin_url }}"
-                                            {% if model.admin_url in request.path %}
-                                                       aria-current="page"{% endif %}>{{ model.name }}</a></th>
-                                {% else %}
-                                    <th scope="row">{{ model.name }}</th>
-                                {% endif %}
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr style="height: 0">
-                            <th></th>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    {% endif %}
-                </table>
-            </div>
-        {% endfor %}
+                {% if model.admin_url %}
+                <th scope="row"><a href="{{ model.admin_url }}" {% if model.admin_url in request.path %}
+                        aria-current="page" {% endif %}>{{ model.name }}</a></th>
+                {% else %}
+                <th scope="row">{{ model.name }}</th>
+                {% endif %}
+                <td></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr style="height: 0">
+                <th></th>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    {% endfor %}
     {% else %}
-        <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+    <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
     {% endif %}
 </nav>

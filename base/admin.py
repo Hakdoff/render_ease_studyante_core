@@ -1,41 +1,23 @@
 from abc import ABC
-from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable
 
 from django import forms
 from django.apps import apps
-from django.contrib import admin, messages
-from django.contrib.admin.utils import NestedObjects
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm, ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group, Permission
-from django.core.exceptions import PermissionDenied
-from django.db import models, router
+from django.db import models
 from django.db.models import QuerySet
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import render, redirect
+from django.http import Http404
 from django.template.response import TemplateResponse
-from django.utils.encoding import force_str
-from django.utils.html import format_html
-from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from reversion.admin import VersionAdmin
 
 from base.models import (
     User,
     AppIcon,
-    BaseModel
 )
-
-
-def custom_titled_filter(title):
-    class Wrapper(admin.FieldListFilter, ABC):
-        def __new__(cls, *args, **kwargs):
-            instance = admin.FieldListFilter.create(*args, **kwargs)
-            instance.title = title
-            return instance
-
-    return Wrapper
 
 
 class BaseModelInline(admin.StackedInline):
@@ -78,7 +60,7 @@ class BaseTabularInline(BaseModelInline):
     template = 'admin/edit_inline/tabular.html'
 
 
-class BaseAdmin(VersionAdmin):
+class BaseAdmin(admin.ModelAdmin):
     admin_priority = 20
     list_fields = tuple()
     edit_fields = None
@@ -120,7 +102,7 @@ class BaseAdmin(VersionAdmin):
     def get_timestamp_fields_and_remarks(self, request, obj=None):
         if self.non_editable:
             return 'created_at',
-        return self.get_timestamp_fields(request, obj) + ('update_remarks',)
+        return self.get_timestamp_fields(request, obj)
 
     def get_fieldsets(self, request, obj=None):
         edit_fields = self.get_edit_fields(request, obj)
@@ -173,108 +155,6 @@ class BaseAdmin(VersionAdmin):
         return super(BaseAdmin, self).get_queryset(request) \
             .prefetch_related(*self.prefetched_related) \
             .select_related(*self.select_related)
-
-    def delete_queryset(self, request, queryset):
-        objs = queryset.all()
-
-        if not len(objs):
-            return
-
-        obj = objs[0]
-        using = router.db_for_write(obj._meta.model)
-
-        collector = NestedObjects(using=using)
-        collector.collect(queryset)
-
-        delete_remarks = request.POST.get('delete_remarks')
-        if delete_remarks:
-            queryset.delete_with_remarks(delete_remarks, request.user)
-
-        collector_nested = collector.nested()
-        try:
-            if len(collector_nested) > 1:
-                attached_objs = collector_nested[1]
-
-                for attached_obj in attached_objs:
-                    if isinstance(attached_obj, BaseModel):
-                        attached_obj.delete_with_remarks(
-                            delete_remarks, request.user)
-        except:
-            pass
-
-    def delete_model(self, request, obj: BaseModel):
-        using = router.db_for_write(obj._meta.model)
-        collector = NestedObjects(using=using)
-        collector.collect([obj])
-
-        delete_remarks = request.POST.get('delete_remarks')
-        if delete_remarks:
-            obj.delete_with_remarks(delete_remarks, request.user)
-
-        collector_nested = collector.nested()
-        if len(collector_nested) > 1:
-            attached_objs = collector_nested[1]
-
-            for attached_obj in attached_objs:
-                if isinstance(attached_obj, BaseModel):
-                    attached_obj.delete_with_remarks(
-                        delete_remarks, request.user)
-
-    def response_delete(self, request, obj_display, obj_id):
-        if not self.model.all_objects.get(pk=obj_id).deleted_at:
-            self.message_user(
-                request,
-                "A reason for deletion is required to continue.",
-                messages.ERROR,
-            )
-
-            return HttpResponseRedirect(request.path)
-        return super(BaseAdmin, self).response_delete(request, obj_display, obj_id)
-
-    def recoverlist_view(self, request, extra_context=None):
-        if not self.has_change_permission(request) or not self.has_add_permission(request):
-            raise PermissionDenied
-
-        model = self.model
-        opts = model._meta
-
-        if request.method == 'POST':
-            info = opts.app_label, opts.model_name,
-            pk = request.POST.get('pk')
-            if not pk:
-                raise Http404()
-            obj = model.all_objects.get(pk=pk)
-            obj.deleted_at = None
-            obj.save()
-
-            msg = format_html(
-                f'The {opts.verbose_name} “{obj}” was recovered successfully.',
-            )
-            self.message_user(request, msg, messages.SUCCESS)
-            return redirect('admin:%s_%s_change' % info, object_id=pk)
-
-        # Set the app name.
-        request.current_app = self.admin_site.name
-        # Get the rest of the context.
-        context = dict(
-            self.admin_site.each_context(request),
-            opts=opts,
-            app_label=opts.app_label,
-            module_name=capfirst(opts.verbose_name),
-            title="Recover deleted %(name)s" % {
-                "name": force_str(opts.verbose_name_plural)},
-            results=model.all_objects.filter(
-                deleted_at__isnull=False,
-                deleted_at__gte=datetime.now() - timedelta(days=30)
-            )
-        )
-        context.update(extra_context or {})
-
-        return render(
-            request,
-            'admin/recover_list.html',
-            context,
-        )
 
     def get_inline_querysets(self, request, obj) -> Dict[str, Callable[[], QuerySet]]:
         return self.inline_querysets
@@ -497,6 +377,11 @@ class UserAdmin(BaseUserAdmin, BaseAdmin):
         if self.has_add_permission(request):
             return super(UserAdmin, self).get_queryset(request)
         return super(UserAdmin, self).get_queryset(request).filter(pk=request.user.pk)
+
+    def changelist_view(self, request, extra_context=None):
+        # Remove the "Recover deleted Users" button from the changelist view
+        self.recovery_form_template = None
+        return super().changelist_view(request, extra_context)
 
 
 @admin.register(AppIcon)

@@ -1,9 +1,14 @@
+from io import BytesIO
 from django import forms
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group, Permission
+from django.db.models import Q
 
-from base.admin import BaseAdmin, User
+import qrcode
+
+from base.admin import BaseAdmin, BaseStackedInline, User
 from .models import Student, Teacher, Parent
 from department.models import Department
 
@@ -18,8 +23,7 @@ class StudentCreationForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = '__all__'
-        exclude = ['user', 'delete_remarks',
-                   'update_remarks', 'deleted_at', 'deleted_by_id']
+        exclude = ['user',]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -29,7 +33,7 @@ class StudentCreationForm(forms.ModelForm):
         instance = getattr(self, 'instance', None)
 
         # Check if instance exists and has an id (indicating it's an existing object)
-        if instance and instance.pk:
+        if instance and instance.pk and instance.user_id:
             user = User.objects.get(pk=instance.user.pk)
 
             # Check for uniqueness
@@ -53,7 +57,7 @@ class StudentCreationForm(forms.ModelForm):
         email = self.cleaned_data['email']
 
         # Check if instance exists and has an id (indicating it's an existing object)
-        if instance.pk:
+        if instance.pk and instance.user_id:
             user = User.objects.get(pk=instance.user.pk)
             user.first_name = self.cleaned_data['first_name']
             user.last_name = self.cleaned_data['last_name']
@@ -71,6 +75,31 @@ class StudentCreationForm(forms.ModelForm):
             )
             instance.user = user
 
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            # You can pass any data you want to encode in the QR code
+            qr.add_data(user.pk)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            # Save QR code image to ImageField
+            buffer = BytesIO()
+            img.save(buffer)
+            file_name = f'qr_code_{user.pk}.png'
+            file_buffer = buffer.getvalue()
+            instance.qr_code_photo.save(file_name, InMemoryUploadedFile(
+                file=BytesIO(file_buffer),
+                field_name=None,
+                name=file_name,
+                content_type='image/png',
+                size=len(file_buffer),
+                charset=None
+            ), save=False)
+
         if commit:
             instance.save()
         return instance
@@ -82,6 +111,7 @@ class StudentAdmin(admin.ModelAdmin):
     formfield_querysets = {
         'user': lambda: User.objects.all(),
     }
+    readonly_fields = ['qr_code_photo']
     fieldsets = (
         ('Student Information', {
             'fields': [
@@ -92,10 +122,13 @@ class StudentAdmin(admin.ModelAdmin):
                 'address',
                 'age',
                 'gender',
+                'year_level',
                 'profile_photo',
+                'qr_code_photo'
             ],
         }),
     )
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(StudentAdmin, self).get_form(request, obj, **kwargs)
         if obj is not None:
@@ -104,7 +137,6 @@ class StudentAdmin(admin.ModelAdmin):
                 form.base_fields['last_name'].initial = obj.user.last_name
                 form.base_fields['email'].initial = obj.user.email
         return form
-
 
 
 @admin.register(Teacher)
@@ -148,24 +180,17 @@ class ParentAdmin(BaseAdmin):
         'students': lambda: Student.objects.all(),
     }
     edit_fields = (
-        ('Teacher Information', {
+        ('Parent Information', {
             'fields': [
                 'user',
                 'contact_number',
                 'age',
                 'gender',
+                'address',
                 'profile_photo',
                 'students'
             ],
         }),
     )
-    add_fieldsets = (
-        (
-            None,
-            {
-                'classes': ('wide',),
-                'fields': ('email', 'first_name', 'last_name', 'password1', 'password2'),
-            },
-        ),
-    )
+    filter_horizontal = ['students']
     search_fields = ('user__first_name', 'user__last_name')
