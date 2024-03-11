@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework import generics, permissions
+from .serializers import DepartmentSerializers
+from .models import Department
 
-# Create your views here.
+
+class DepartmentListCreateView(generics.ListCreateAPIView):
+    serializer_class = DepartmentSerializers
+    queryset = Department.objects.all()
+    permission_classes = []
