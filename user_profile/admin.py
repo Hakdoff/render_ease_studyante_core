@@ -105,6 +105,65 @@ class StudentCreationForm(forms.ModelForm):
         return instance
 
 
+class ParentCreationForm(forms.ModelForm):
+    email = forms.CharField(label='Email', widget=forms.EmailInput)
+    first_name = forms.CharField(label='First Name', widget=forms.TextInput)
+    last_name = forms.CharField(label='Last Name', widget=forms.TextInput)
+    
+    class Meta:
+        model = Parent
+        fields = '__all__'
+        # exclude = ['user',]
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        contact_number = cleaned_data.get('contact_number')
+        
+        instance = getattr(self, 'instance', None)
+        
+        if instance and instance.pk and instance.user_id:
+            user = User.objects.get(pk=instance.user.pk)
+            
+            if User.object.filter(username=email).exclude(username=user.email).exists():
+                self.add_error('email', 'email already exists')
+            
+            if Parent.object.exclude(user__email=user.email, contact_number=contact_number).filter(contact_number=contact_number).exists():
+                self.add_error('contact_number', 'contact number already exists')
+        else:
+            if User.object.filter(username=email).exists:
+                self.add_error('email', 'email already exists')
+            
+            if Parent.objects.filter(contact_number=contact_number).exists():
+                self.add_error('contact_number', 'contact number already exists')
+                
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        email = self.cleaned_data['email']
+        
+        if instance.pk and instance.user_id:
+            user = User.object.get(pk=instance.user.pk)
+            user.first_name = self.cleaned_data['first_name']
+            user.last_name = self.cleaned_data['last_name']
+            user.username=email
+            user.email=email
+            
+        else:
+            user = User.objects.create_user(
+                username=email,
+                password='1234',
+                email=email,
+                first_name=self.cleaned_data['first_name'],
+                last_name=self.cleaned_data['last_name'],
+            )
+            instance.user = user
+            
+        if commit:
+            instance.save()
+        return instance
+    
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     form = StudentCreationForm
@@ -170,18 +229,17 @@ class TeacherAdmin(BaseAdmin):
     )
     search_fields = ('user__first_name', 'user__last_name')
 
-
 @admin.register(Parent)
 class ParentAdmin(BaseAdmin):
-    list_fields = ('user', 'address', 'contact_number',
-                   'age', 'gender', 'profile_photo')
+    form = ParentCreationForm
+    list_fields = ('user', 'address', 'contact_number', 'age', 'gender', 'profile_photo')
     formfield_querysets = {
         'user': lambda: User.objects.all(),
-        'students': lambda: Student.objects.all(),
+        'students': lambda: Student.objects.all()
     }
     edit_fields = (
-        ('Parent Information', {
-            'fields': [
+        ('Parent Information',{
+            'fields':[
                 'user',
                 'contact_number',
                 'age',
@@ -189,8 +247,17 @@ class ParentAdmin(BaseAdmin):
                 'address',
                 'profile_photo',
                 'students'
-            ],
+            ]
         }),
     )
-    filter_horizontal = ['students']
+    filter_vertical = ['students']
     search_fields = ('user__first_name', 'user__last_name')
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(ParentAdmin, self).get_form(request, obj, **kwargs)
+        if obj is not None:
+            if obj.user:
+                form.base_fields['first_name'].initial = obj.user.first_name
+                form.base_fields['last_name'].initial = obj.user.last_name
+                form.base_fields['email'].initial = obj.user.email
+        return form
