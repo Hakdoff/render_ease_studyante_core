@@ -1,6 +1,6 @@
 from django.db import models
 from base.models import BaseModelWithUUID, User
-from department.models import Department
+from class_information.models import Department
 
 
 class BaseProfile(BaseModelWithUUID):

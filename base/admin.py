@@ -7,14 +7,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm as BaseUserChangeForm, ReadOnlyPasswordHashField
 from django.contrib.auth.models import Group, Permission
-from django.db import models
+from django.db import models, router
 from django.db.models import QuerySet
 from django.http import Http404
 from django.template.response import TemplateResponse
 from django.utils.translation import gettext_lazy as _
 from reversion.admin import VersionAdmin
+from django.contrib.admin.utils import NestedObjects
 
 from base.models import (
+    BaseModel,
     User,
     AppIcon,
 )
@@ -90,6 +92,13 @@ class BaseAdmin(admin.ModelAdmin):
     formfield_select_formats = {}
 
     _cached_queries = None
+
+    def delete_model(self, request, obj: BaseModel):
+        using = router.db_for_write(obj._meta.model)
+        collector = NestedObjects(using=using)
+        collector.collect([obj])
+
+        obj.hard_delete()
 
     def get_list_display(self, request):
         return self.get_list_fields(request) + self.get_timestamp_fields(request)

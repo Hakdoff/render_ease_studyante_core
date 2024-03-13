@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class SectionConfig(AppConfig):
+class RegistrationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'section'
+    name = 'registration'

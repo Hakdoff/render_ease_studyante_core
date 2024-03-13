@@ -1,6 +1,6 @@
 from django.urls import path
 
-from department.views import DepartmentListCreateView
+from class_information.views import DepartmentListCreateView
 
 app_name = 'api'
 

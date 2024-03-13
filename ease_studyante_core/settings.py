@@ -58,9 +58,9 @@ INSTALLED_APPS = [
 
     'base',
     'user_profile',
-    'department',
-    'section',
-    'subject',
+    'class_information',
+    'registration',
+    'academic_record',
     'api',
 ]
 

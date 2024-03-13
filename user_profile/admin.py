@@ -10,7 +10,7 @@ import qrcode
 
 from base.admin import BaseAdmin, BaseStackedInline, User
 from .models import Student, Teacher, Parent
-from department.models import Department
+from class_information.models import Department
 
 
 class StudentCreationForm(forms.ModelForm):
@@ -109,47 +109,49 @@ class ParentCreationForm(forms.ModelForm):
     email = forms.CharField(label='Email', widget=forms.EmailInput)
     first_name = forms.CharField(label='First Name', widget=forms.TextInput)
     last_name = forms.CharField(label='Last Name', widget=forms.TextInput)
-    
+
     class Meta:
         model = Parent
         fields = '__all__'
-        # exclude = ['user',]
-        
+        exclude = ['user',]
+
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get('email')
         contact_number = cleaned_data.get('contact_number')
-        
+
         instance = getattr(self, 'instance', None)
-        
+
         if instance and instance.pk and instance.user_id:
             user = User.objects.get(pk=instance.user.pk)
-            
+
             if User.object.filter(username=email).exclude(username=user.email).exists():
                 self.add_error('email', 'email already exists')
-            
+
             if Parent.object.exclude(user__email=user.email, contact_number=contact_number).filter(contact_number=contact_number).exists():
-                self.add_error('contact_number', 'contact number already exists')
+                self.add_error('contact_number',
+                               'contact number already exists')
         else:
             if User.object.filter(username=email).exists:
                 self.add_error('email', 'email already exists')
-            
+
             if Parent.objects.filter(contact_number=contact_number).exists():
-                self.add_error('contact_number', 'contact number already exists')
-                
+                self.add_error('contact_number',
+                               'contact number already exists')
+
         return cleaned_data
-    
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         email = self.cleaned_data['email']
-        
+
         if instance.pk and instance.user_id:
             user = User.object.get(pk=instance.user.pk)
             user.first_name = self.cleaned_data['first_name']
             user.last_name = self.cleaned_data['last_name']
-            user.username=email
-            user.email=email
-            
+            user.username = email
+            user.email = email
+
         else:
             user = User.objects.create_user(
                 username=email,
@@ -159,13 +161,15 @@ class ParentCreationForm(forms.ModelForm):
                 last_name=self.cleaned_data['last_name'],
             )
             instance.user = user
-            
+
         if commit:
             instance.save()
         return instance
-    
+
+
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
+    search_fields = ['user__email', 'user__firstname', 'user__lastname']
     form = StudentCreationForm
     formfield_querysets = {
         'user': lambda: User.objects.all(),
@@ -229,18 +233,22 @@ class TeacherAdmin(BaseAdmin):
     )
     search_fields = ('user__first_name', 'user__last_name')
 
+
 @admin.register(Parent)
 class ParentAdmin(BaseAdmin):
     form = ParentCreationForm
-    list_fields = ('user', 'address', 'contact_number', 'age', 'gender', 'profile_photo')
+    list_fields = ('user', 'address', 'contact_number',
+                   'age', 'gender', 'profile_photo')
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'students': lambda: Student.objects.all()
     }
     edit_fields = (
-        ('Parent Information',{
-            'fields':[
-                'user',
+        ('Parent Information', {
+            'fields': [
+                'email',
+                'first_name',
+                'last_name',
                 'contact_number',
                 'age',
                 'gender',
@@ -252,7 +260,7 @@ class ParentAdmin(BaseAdmin):
     )
     filter_vertical = ['students']
     search_fields = ('user__first_name', 'user__last_name')
-    
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(ParentAdmin, self).get_form(request, obj, **kwargs)
         if obj is not None:
