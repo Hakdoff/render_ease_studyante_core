@@ -27,6 +27,7 @@ from drf_yasg.views import get_schema_view
 
 
 from ease_studyante_core import settings
+from ease_studyante_core.views import TokenViewWithUserId
 
 
 schema_view = get_schema_view(
@@ -50,6 +51,7 @@ urlpatterns = [
          cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls', namespace='api'),),
+    path('o/login/', TokenViewWithUserId.as_view(), name='token'),
 ]
 
 urlpatterns += router.urls

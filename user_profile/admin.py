@@ -125,14 +125,14 @@ class ParentCreationForm(forms.ModelForm):
         if instance and instance.pk and instance.user_id:
             user = User.objects.get(pk=instance.user.pk)
 
-            if User.object.filter(username=email).exclude(username=user.email).exists():
+            if User.objects.filter(username=email).exclude(username=user.email).exists():
                 self.add_error('email', 'email already exists')
 
-            if Parent.object.exclude(user__email=user.email, contact_number=contact_number).filter(contact_number=contact_number).exists():
+            if Parent.objects.exclude(user__email=user.email, contact_number=contact_number).filter(contact_number=contact_number).exists():
                 self.add_error('contact_number',
                                'contact number already exists')
         else:
-            if User.object.filter(username=email).exists:
+            if User.objects.filter(username=email).exists():
                 self.add_error('email', 'email already exists')
 
             if Parent.objects.filter(contact_number=contact_number).exists():
@@ -146,7 +146,7 @@ class ParentCreationForm(forms.ModelForm):
         email = self.cleaned_data['email']
 
         if instance.pk and instance.user_id:
-            user = User.object.get(pk=instance.user.pk)
+            user = User.objects.get(pk=instance.user.pk)
             user.first_name = self.cleaned_data['first_name']
             user.last_name = self.cleaned_data['last_name']
             user.username = email
