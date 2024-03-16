@@ -4,7 +4,17 @@ from class_information.models import Subject, Section
 from base.models import BaseModelWithUUID
 
 
-class Grade(models.Model):
+class AcademicYear(BaseModelWithUUID):
+    name = models.CharField(max_length=100)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    remarks = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Grade(BaseModelWithUUID):
     GRADING_PERIOD_CHOICES = (
         ('First Grading', 'First Grading'),
         ('Second Grading', 'Second Grading'),

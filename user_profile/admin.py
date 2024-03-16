@@ -204,8 +204,7 @@ class StudentAdmin(admin.ModelAdmin):
 
 @admin.register(Teacher)
 class TeacherAdmin(BaseAdmin):
-    list_fields = ('user', 'address', 'contact_number',
-                   'age', 'gender', 'profile_photo')
+    list_fields = ('user', 'department')
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'department': lambda: Department.objects.all(),
