@@ -48,9 +48,18 @@ class Schedule(BaseModelWithUUID):
 
 
 class Assessment(BaseModelWithUUID):
+    ASSESSMENT_TYPE_CHOICES = [
+        ('QUIZ', 'Quiz'),
+        ('ASSIGNMENT', 'Assignment'),
+        ('EXAM', 'Exam'),
+    ]
+
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    assessment_type = models.CharField(
+        max_length=50, choices=ASSESSMENT_TYPE_CHOICES)
     max_marks = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):

@@ -42,7 +42,7 @@ class StudentProfileView(generics.RetrieveAPIView):
 
 class TeacherProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = StudentSerializer
+    serializer_class = TeacherSerializer
 
     def get(self, request, *args, **kwargs):
         user = self.request.user

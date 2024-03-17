@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, response, status, viewsets
+from rest_framework import generics, permissions, response, status, exceptions
 
 from core.paginate import ExtraSmallResultsSetPagination
 from .serializers import (StudentScheduleSerialzers, AttendanceSerializers)
@@ -26,11 +26,7 @@ class StudentScheduleListView(generics.ListAPIView):
                 register_user = register_users.first()
                 return Schedule.objects.filter(academic_year=current_academic, section__pk=register_user.section.pk).order_by('time_start')
 
-        error = {
-            "error_message": "Student not found"
-        }
-
-        return response.Response(error, status=status.HTTP_404_NOT_FOUND)
+        return []
 
 
 class StudentAttendanceListView(generics.ListAPIView):
@@ -53,11 +49,7 @@ class StudentAttendanceListView(generics.ListAPIView):
                 register_user = register_users.first()
                 return Attendance.objects.filter(student=register_user.student.pk).order_by('date')
 
-        error = {
-            "error_message": "Student not found"
-        }
-
-        return response.Response(error, status=status.HTTP_404_NOT_FOUND)
+        return []
 
 
 class StudentAttendanceRetrieveView(generics.RetrieveAPIView):

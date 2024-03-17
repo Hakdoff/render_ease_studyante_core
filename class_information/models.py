@@ -16,7 +16,7 @@ class Department(models.Model):
     code = models.CharField(max_length=50)
 
     def __str__(self) -> str:
-        return self.code + " " + self.name
+        return f'{self.code} - {self.name}'
 
 
 class Section(BaseModelWithUUID):
@@ -34,6 +34,9 @@ class Subject(BaseModelWithUUID):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     year_level = models.CharField(
         max_length=10, choices=YEAR_LEVEL_CHOICES, default='GRADE 7')
+    written_work = models.IntegerField(default=0)
+    performance_task = models.IntegerField(default=0)
+    quartery_assessment = models.IntegerField(default=0)
 
     def __str__(self) -> str:
         return f'{self.name} - {self.year_level}'

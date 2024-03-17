@@ -47,8 +47,4 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 serializer = UserSerializer(queryset, many=True)
                 return Response(serializer.data)
 
-        error = {
-            "error_message": "Student not found"
-        }
-
-        return response.Response(error, status=status.HTTP_404_NOT_FOUND)
+        return []

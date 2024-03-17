@@ -48,7 +48,7 @@ class Student(BaseProfile):
         upload_to='images/qr_code/', blank=False, null=False)
 
     def __str__(self):
-        return f'{self.user.last_name}- {self.user.first_name}'
+        return f'{self.user.last_name} - {self.user.first_name}'
 
 
 class Teacher(BaseProfile):

@@ -169,6 +169,7 @@ class ParentCreationForm(forms.ModelForm):
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'year_level')
     search_fields = ['user__email', 'user__firstname', 'user__lastname']
     form = StudentCreationForm
     formfield_querysets = {
