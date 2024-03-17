@@ -2,7 +2,7 @@ from django.urls import path
 
 from class_information.views import DepartmentListCreateView
 from user_profile.views import StudentProfileView, TeacherProfileView, ParentProfileView
-from academic_record.views import TeacherScheduleListView
+from academic_record.views import TeacherScheduleListView, StudentScheduleListView
 
 app_name = 'api'
 
@@ -13,9 +13,11 @@ urlpatterns = [
          name='department-list'),
 
 
-    # Student Profile
+    # Student
     path('student-profile', StudentProfileView.as_view(),
          name='student-profile'),
+    path('student-schedule', StudentScheduleListView.as_view(),
+         name='student-schedule'),
 
     # Teacher
     path('teacher-profile', TeacherProfileView.as_view(),

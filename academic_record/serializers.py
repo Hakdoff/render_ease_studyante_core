@@ -11,7 +11,7 @@ class AcademicYearSerializers(serializers.Serializer):
         exclude = ['created_at', 'updated_at']
 
 
-class ScheduleSerialzers(serializers.ModelSerializer):
+class TeacherScheduleSerialzers(serializers.ModelSerializer):
     subject = SubjectSerializers()
     academic_year = AcademicYearSerializers()
     section = SectionSerializers()
@@ -19,3 +19,12 @@ class ScheduleSerialzers(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         exclude = ['created_at', 'updated_at']
+
+
+class StudentScheduleSerialzers(serializers.ModelSerializer):
+    subject = SubjectSerializers()
+    academic_year = AcademicYearSerializers()
+
+    class Meta:
+        model = Schedule
+        exclude = ['section', 'created_at', 'updated_at']
