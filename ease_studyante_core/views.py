@@ -22,23 +22,29 @@ class TokenViewWithUserId(TokenView):
         if is_parent:
             if not Parent.objects.filter(user__username=username).exists():
                 error_message = {
-                    "error_message": "User not found"
+                    "error_description": "User not found"
                 }
-                return HttpResponse(content=json.dumps(error_message), status=404)
+                return HttpResponse(content=json.dumps(error_message), status=404, content_type="application/json")
 
         if is_student:
             if not Student.objects.filter(user__username=username).exists():
                 error_message = {
-                    "error_message": "User not found"
+                    "error_description": "User not found"
                 }
-                return HttpResponse(content=json.dumps(error_message), status=404)
+                return HttpResponse(content=json.dumps(error_message), status=404, content_type="application/json")
 
         if is_teacher:
             if not Teacher.objects.filter(user__username=username).exists():
                 error_message = {
-                    "error_message": "User not found"
+                    "error_description": "User not found"
                 }
-                return HttpResponse(content=json.dumps(error_message), status=404)
+                return HttpResponse(content=json.dumps(error_message), status=404, content_type="application/json")
+
+        if not is_teacher and not is_student and not is_parent:
+            error_message = {
+                "error_description": "User not found"
+            }
+            return HttpResponse(content=json.dumps(error_message), status=404, content_type="application/json")
 
         url, headers, body, status = self.create_token_response(request)
 

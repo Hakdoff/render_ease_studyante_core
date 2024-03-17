@@ -51,6 +51,7 @@ class Assessment(BaseModelWithUUID):
     ASSESSMENT_TYPE_CHOICES = [
         ('QUIZ', 'Quiz'),
         ('ASSIGNMENT', 'Assignment'),
+        ('PROJECT', 'Project'),
         ('EXAM', 'Exam'),
     ]
 
