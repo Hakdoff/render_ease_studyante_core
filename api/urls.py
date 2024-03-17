@@ -34,13 +34,13 @@ urlpatterns += [
 
 
     # Teacher
-    path('teacher-profile', TeacherProfileView.as_view(),
+    path('teacher/profile', TeacherProfileView.as_view(),
          name='teacher-profile'),
     path('teacher/schedules', TeacherScheduleListView.as_view(),
          name='teacher-schedules'),
 
 
     # Parent Profile
-    path('parent-profile', ParentProfileView.as_view(),
+    path('parent/profile', ParentProfileView.as_view(),
          name='parent-profile'),
 ]
