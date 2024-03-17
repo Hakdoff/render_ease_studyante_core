@@ -2,7 +2,8 @@
 from rest_framework import serializers
 
 from class_information.serializers import SectionSerializers, SubjectSerializers
-from .models import AcademicYear, Schedule
+from user_profile.serializers import StudentSerializer
+from .models import AcademicYear, Schedule, Attendance
 
 
 class AcademicYearSerializers(serializers.Serializer):
@@ -28,3 +29,10 @@ class StudentScheduleSerialzers(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         exclude = ['section', 'created_at', 'updated_at']
+
+
+class AttendanceSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Attendance
+        exclude = ['schedule', 'student', 'created_at', 'updated_at']

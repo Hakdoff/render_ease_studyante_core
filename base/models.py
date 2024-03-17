@@ -14,7 +14,7 @@ class BaseModel(models.Model):
         abstract = True
 
     def delete(self, using=None, keep_parents=False):
-        self.save()
+        super(BaseModel, self).delete()
 
     def hard_delete(self):
         super(BaseModel, self).delete()
