@@ -33,6 +33,8 @@ class Grade(BaseModelWithUUID):
 
 
 class Schedule(BaseModelWithUUID):
+    academic_year = models.ForeignKey(
+        AcademicYear, related_name='academic_schedule', on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)

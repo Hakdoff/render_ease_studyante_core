@@ -12,14 +12,20 @@ admin.site.register(AcademicYear)
 
 @admin.register(Schedule)
 class ScheduleAdmin(BaseAdmin):
+    list_fields = ('teacher', 'time_start', 'time_end',
+                   'section', 'subject')
+    search_fields = ('teacher', 'section', 'subject')
+    readonly_fields = ('academic_year', 'created_at', 'updated_at')
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
         'section': lambda: Section.objects.all(),
+        'academic_year': lambda: AcademicYear.objects.all(),
     }
     edit_fields = (
         ('Schedule Information', {
             'fields': [
+                'academic_year',
                 'subject',
                 'teacher',
                 'section',
