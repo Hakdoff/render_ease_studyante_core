@@ -19,7 +19,7 @@ class StudentProfileView(generics.RetrieveAPIView):
         if user_profiles.exists() and academic_years.exists():
             user_profile = user_profiles.first()
             register_users = Registration.objects.filter(
-                student=user_profile, academic_years=academic_years.first())
+                student=user_profile, academic_year=academic_years.first())
 
             if register_users.exists():
                 data = {
