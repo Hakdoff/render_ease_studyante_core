@@ -2,7 +2,7 @@
 from rest_framework import serializers
 
 from class_information.serializers import SectionSerializers, SubjectSerializers
-from user_profile.serializers import TeacherSerializer
+from user_profile.serializers import StudentSerializer, TeacherSerializer
 from .models import AcademicYear, Schedule, Attendance
 
 
@@ -26,15 +26,17 @@ class StudentScheduleSerialzers(serializers.ModelSerializer):
     subject = SubjectSerializers()
     academic_year = AcademicYearSerializers()
     teacher = TeacherSerializer()
+    section = SectionSerializers()
 
     class Meta:
         model = Schedule
-        exclude = ['section', 'created_at', 'updated_at']
+        exclude = ['created_at', 'updated_at']
 
 
 class AttendanceSerializers(serializers.ModelSerializer):
-    schedule = StudentScheduleSerialzers()
+    schedule = StudentScheduleSerialzers(read_only=True)
+    student = StudentSerializer(read_only=True)
 
     class Meta:
         model = Attendance
-        exclude = ['student', 'created_at', 'updated_at']
+        exclude = ['created_at', 'updated_at']

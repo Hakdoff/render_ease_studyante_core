@@ -7,6 +7,7 @@ from academic_record.views import (
     TeacherScheduleListView, AttendanceTeacherViewSet)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView)
+from registration.views import RegisteredStudentListView
 
 app_name = 'api'
 
@@ -38,6 +39,9 @@ urlpatterns += [
          name='teacher-profile'),
     path('teacher/schedules', TeacherScheduleListView.as_view(),
          name='teacher-schedules'),
+    path('teacher/registered/students', RegisteredStudentListView.as_view(),
+         name='teacher-registered-students'),
+
 
 
     # Parent Profile

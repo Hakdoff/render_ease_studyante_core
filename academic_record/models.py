@@ -76,8 +76,8 @@ class StudentAssessment(BaseModelWithUUID):
 class Attendance(BaseModelWithUUID):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    date = models.DateTimeField(default=now)
+    date_attend = models.DateTimeField(default=now)
     is_present = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.date} - {self.student.user.last_name} {self.student.user.first_name} - {self.is_present}'
+        return f'{self.student.user.last_name} {self.student.user.first_name} - {self.is_present}'
