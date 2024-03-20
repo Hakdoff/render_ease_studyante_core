@@ -3,6 +3,16 @@ from base.models import BaseModelWithUUID, User
 from class_information.models import Department
 
 
+""" 
+    Base Model profile since both student, parent and teacher have common entities
+    BaseModelWithUUID to replace django id's (1,2, 3) to UUID base ids
+    class Meta: To define what model django to be configure, 
+        abstract means that the models is abstracted and can be inherited
+    
+    Student, Teacher and Parent are inherited in BaseProfile model
+"""
+
+
 class BaseProfile(BaseModelWithUUID):
     class Meta:
         abstract = True
