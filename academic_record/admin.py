@@ -15,7 +15,6 @@ class ScheduleAdmin(BaseAdmin):
     list_fields = ('teacher', 'time_start', 'time_end',
                    'section', 'subject')
     search_fields = ('teacher', 'section', 'subject')
-    readonly_fields = ('academic_year', 'created_at', 'updated_at')
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
