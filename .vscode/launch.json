@@ -11,10 +11,16 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "runserver",
-                "192.168.1.5:8000"
             ],
             "django": true,
-            "autoStartBrowser": false
+            "autoStartBrowser": false,
+            "env": {
+                "EMAIL_HOST_USER": "erbfrt@gmail.com",
+                "DEFAULT_FROM_EMAIL": "erbfrt@gmail.com",
+                "EMAIL_HOST_PASSWORD": "lfeaocitwbcucamm",
+                "DATABASE_URL": "postgres://ease_studyante_db_user:penuNDRZqRrEOgLQTZDpV1Fso5w1L59Q@dpg-cnte5ansc6pc73cavle0-a.oregon-postgres.render.com/ease_studyante_db",
+                "DEBUG": "False",
+            }
         }
     ]
 }
