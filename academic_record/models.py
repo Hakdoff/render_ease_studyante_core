@@ -26,7 +26,7 @@ class Grade(BaseModelWithUUID):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     grading_period = models.CharField(
-        max_length=20, choices=GRADING_PERIOD_CHOICES)
+        max_length=255, choices=GRADING_PERIOD_CHOICES)
     marks = models.DecimalField(max_digits=5, decimal_places=2)
 
     def __str__(self):

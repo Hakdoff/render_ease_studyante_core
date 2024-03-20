@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='grade',
             name='grading_period',
-            field=models.CharField(choices=[('First Grading', 'First Grading'), ('Second Grading', 'Second Grading'), ('Third Grading', 'Third Grading'), ('Fourth Grading', 'Fourth Grading')], default=django.utils.timezone.now, max_length=20),
+            field=models.CharField(choices=[('First Grading', 'First Grading'), ('Second Grading', 'Second Grading'), (
+                'Third Grading', 'Third Grading'), ('Fourth Grading', 'Fourth Grading')], default=django.utils.timezone.now, max_length=255),
             preserve_default=False,
         ),
     ]
