@@ -48,20 +48,35 @@ class Schedule(BaseModelWithUUID):
 
 
 class Assessment(BaseModelWithUUID):
-    ASSESSMENT_TYPE_CHOICES = [
+    TASK_TYPE_CHOICES = [
         ('QUIZ', 'Quiz'),
         ('ASSIGNMENT', 'Assignment'),
         ('PROJECT', 'Project'),
         ('EXAM', 'Exam'),
     ]
-
+    GRADING_PERIOD_CHOICES = (
+        ('FIRST_GRADING', 'First Grading'),
+        ('SECOND_GRADING', 'Second Grading'),
+        ('THIRD_GRADING', 'Third Grading'),
+        ('FOURTH_GRADING', 'Fourth Grading'),
+    )
+    ASSESSMENT_TYPE_CHOICES = (
+        ('WRITTEN_WORKS', 'Written Works'),
+        ('PERFORMANCE_TASK', 'Performance Task'),
+        ('QUARTERLY_ASSESSMENT', 'Quarterly Assessment'),
+    )
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     assessment_type = models.CharField(
-        max_length=50, choices=ASSESSMENT_TYPE_CHOICES)
+        max_length=50, choices=ASSESSMENT_TYPE_CHOICES, default='WRITTEN_WORKS')
+    task_type = models.CharField(
+        max_length=50, choices=TASK_TYPE_CHOICES, default='ASSIGNMENT')
+
     max_marks = models.DecimalField(max_digits=5, decimal_places=2)
+    grading_period = models.CharField(
+        max_length=255, choices=GRADING_PERIOD_CHOICES, default="FIRST_GRADING")
 
     def __str__(self):
         return self.name
