@@ -20,7 +20,7 @@ def gpa_calculate(written_works, performance_tasks, quarterly_assessments):
     performance_tasks_marks = performance_tasks['obtained_marks']
     quarterly_assessments_marks = quarterly_assessments['obtained_marks']
 
-    if len(written_works_marks) == 0 or len(performance_tasks_marks) == 0 and len(quarterly_assessments_marks) == 0:
+    if len(written_works_marks) == 0 or len(performance_tasks_marks) == 0 or len(quarterly_assessments_marks) == 0:
         return 'N/A'
 
     # Calculate weighted marks for each assessment type
