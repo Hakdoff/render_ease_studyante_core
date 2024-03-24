@@ -44,4 +44,4 @@ def gpa_calculate(written_works, performance_tasks, quarterly_assessments):
     # Calculate overall grade
     overall_grade = total_weighted_marks / total_weightage * 100
 
-    return overall_grade
+    return str(overall_grade)
