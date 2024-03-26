@@ -11,5 +11,5 @@ class RegisteredStudentListView(generics.ListAPIView):
     def get_queryset(self):
         section = self.request.GET.get('section', None)
         if section:
-            return Registration.objects.filter(section__pk=section)
+            return Registration.objects.filter(section__pk=section).order_by('student__user__lastname')
         return super().get_queryset()
