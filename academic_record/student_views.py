@@ -50,7 +50,7 @@ class StudentAttendanceListView(generics.ListAPIView):
             if register_users.exists():
                 # check the user wether is register to current academic or not
                 register_user = register_users.first()
-                return Attendance.objects.filter(student=register_user.student.pk).order_by('-date', '-time_in')
+                return Attendance.objects.filter(student=register_user.student.pk).order_by('-attendance_date', '-time_in')
 
         return []
 
