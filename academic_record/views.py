@@ -58,7 +58,7 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
             current_date = datetime.now()
 
             attendances = Attendance.objects.filter(
-                student__pk=register_student.student.pk, date_attend__date=current_date)
+                student__pk=register_student.student.pk, time_in__date=current_date)
 
             if schedules.exists() and not attendances.exists():
                 schedule = schedules.first()

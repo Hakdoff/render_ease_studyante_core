@@ -3,6 +3,7 @@ from user_profile.models import Student, Teacher
 from class_information.models import Subject, Section
 from base.models import BaseModelWithUUID
 from django.utils.timezone import now
+from datetime import date
 
 
 class AcademicYear(BaseModelWithUUID):
@@ -91,8 +92,10 @@ class StudentAssessment(BaseModelWithUUID):
 class Attendance(BaseModelWithUUID):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    date_attend = models.DateTimeField(default=now)
+    time_in = models.DateTimeField(default=now, blank=True, null=True)
+    time_out = models.DateTimeField(blank=True, null=True)
     is_present = models.BooleanField(default=False)
+    attendance_date = models.DateField(default=date.today)
 
     def __str__(self):
         return f'{self.student.user.last_name} {self.student.user.first_name} - {self.is_present}'
