@@ -46,8 +46,9 @@ class StudentAttendanceListView(generics.ListAPIView):
 
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()
+        subject_id = self.request.GET.get('subject_id', None)
 
-        if academic_years.exists():
+        if academic_years.exists() and subject_id:
             user = self.request.user
             current_academic = academic_years.first()
             register_users = Registration.objects.filter(
@@ -56,7 +57,7 @@ class StudentAttendanceListView(generics.ListAPIView):
             if register_users.exists():
                 # check the user wether is register to current academic or not
                 register_user = register_users.first()
-                return Attendance.objects.filter(student=register_user.student.pk).order_by('-attendance_date', '-time_in')
+                return Attendance.objects.filter(student=register_user.student.pk, schedule__subject__pk=subject_id).order_by('-attendance_date', '-time_in')
 
         return []
 
