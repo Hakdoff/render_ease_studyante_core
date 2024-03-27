@@ -31,7 +31,7 @@ class TeacherScheduleListView(generics.ListAPIView):
         return queryset
 
 
-class AttendanceTeacherViewSet(viewsets.ViewSet):
+class AttendanceTeacherListView(generics.ListAPIView):
     serializer_class = AttendanceSerializers
     queryset = Attendance.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -45,11 +45,19 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 description='Add student id to filter specific attendance otherwise will display all attendance',
                 type=openapi.TYPE_STRING
             ),
+            openapi.Parameter(
+                'subject_id',
+                openapi.IN_QUERY,
+                description='Add subject id to filter specific attendance otherwise will display all attendance',
+                type=openapi.TYPE_STRING
+            ),
         ]
     )
-    def list(self, request):
+    def get_queryset(self):
         academic_years = AcademicYear.objects.all()
-        student = request.query_params.get('student_id', None)
+        student = self.request.GET.get('student_id', None)
+        subject = self.request.GET.get('subject_id', None)
+
         attendance = []
         user = self.request.user
 
@@ -57,16 +65,21 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
             register_students = Registration.objects.filter(
                 student__user__pk=student, academic_year=academic_years.first())
             if register_students.exists():
-                if student:
+                if student and subject:
                     attendance = Attendance.objects.filter(
-                        schedule__teacher__user__pk=user.pk, student=register_students.first().student).order_by('-attendance_date', '-time_in')
+                        schedule__teacher__user__pk=user.pk, schedule__subject__pk=subject, student=register_students.first().student).order_by('-attendance_date', '-time_in')
             else:
                 attendance = Attendance.objects.filter(
                     schedule__teacher__user__pk=user.pk).order_by('-attendance_date', '-time_in')
 
-        serializer = AttendanceSerializers(attendance, many=True)
+        return attendance
 
-        return Response(serializer.data)
+
+class AttendanceTeacherViewSet(viewsets.ViewSet):
+    serializer_class = AttendanceSerializers
+    queryset = Attendance.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
 
     def create(self, request):
         student = request.data.get('student', None)

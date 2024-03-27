@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from class_information.views import DepartmentListCreateView
 from user_profile.views import StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
-    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView)
+    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView, AttendanceTeacherListView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView)
 from registration.views import RegisteredStudentListView
@@ -12,7 +12,7 @@ from registration.views import RegisteredStudentListView
 app_name = 'api'
 
 router = DefaultRouter()
-router.register(r'teacher/students/attendance', AttendanceTeacherViewSet,
+router.register(r'qr_code', AttendanceTeacherViewSet,
                 basename='student-attendance')
 
 urlpatterns = router.urls
@@ -47,6 +47,8 @@ urlpatterns += [
          name='teacher-registered-students'),
     path('teacher/assessments', TeacherAssessmentListView.as_view(),
          name='teacher-assessments'),
+    path('teacher/students/attendance', AttendanceTeacherListView.as_view(),
+         name='teacher-students-attendance'),
 
 
     # Parent Profile
