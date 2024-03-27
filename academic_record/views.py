@@ -1,12 +1,15 @@
 from datetime import datetime
-from rest_framework import generics, permissions, response, status, viewsets
+from rest_framework import generics, permissions,  status, viewsets
 
+from academic_record.gpa_caluclate import gpa_calculate
 from core.paginate import ExtraSmallResultsSetPagination
-from user_profile.models import Teacher
-from .serializers import (TeacherScheduleSerialzers, AttendanceSerializers)
-from .models import Schedule, AcademicYear, Attendance
+from .serializers import (StudentAssessmentSerializers,
+                          TeacherScheduleSerialzers, AttendanceSerializers)
+from .models import Schedule, AcademicYear, Attendance, StudentAssessment
 from registration.models import Registration
 from rest_framework.response import Response
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class TeacherScheduleListView(generics.ListAPIView):
@@ -34,10 +37,33 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = ExtraSmallResultsSetPagination
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'student_id',
+                openapi.IN_QUERY,
+                description='Add student id to filter specific attendance otherwise will display all attendance',
+                type=openapi.TYPE_STRING
+            ),
+        ]
+    )
     def list(self, request):
+        academic_years = AcademicYear.objects.all()
+        student = request.query_params.get('student_id', None)
+        attendance = []
         user = self.request.user
-        attendance = Attendance.objects.filter(
-            schedule__teacher__user__pk=user.pk)
+
+        if academic_years.exists():
+            register_students = Registration.objects.filter(
+                student__user__pk=student, academic_year=academic_years.first())
+            if register_students.exists():
+                if student:
+                    attendance = Attendance.objects.filter(
+                        schedule__teacher__user__pk=user.pk, student=register_students.first().student).order_by('-attendance_date', '-time_in')
+            else:
+                attendance = Attendance.objects.filter(
+                    schedule__teacher__user__pk=user.pk).order_by('-attendance_date', '-time_in')
+
         serializer = AttendanceSerializers(attendance, many=True)
 
         return Response(serializer.data)
@@ -81,3 +107,74 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
             "error_message": "Student not found",
         }
         return Response(data=error, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TeacherAssessmentListView(generics.ListAPIView):
+    serializer_class = StudentAssessmentSerializers
+    queryset = StudentAssessment.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+        grading_period = self.request.GET.get('grading_period', None)
+        student_id = self.request.GET.get('student_id', None)
+
+        if academic_years.exists() and grading_period and student_id:
+            user = self.request.user
+            current_academic = academic_years.first()
+            register_users = Registration.objects.filter(
+                academic_year=current_academic, student__user__pk=student_id)
+
+            if register_users.exists():
+                # check the user wether is register to current academic or not
+                register_user = register_users.first()
+                return StudentAssessment.objects.filter(assessment__academic_year=current_academic, assessment__grading_period=grading_period, student=register_user.student,
+                                                        assessment__teacher__user__pk=user.pk).order_by('created_at', 'assessment__grading_period')
+
+        return []
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        # Get all student assessment results
+        student_assessments = self.get_queryset()
+
+        written_works_marks = []
+        performance_tasks_marks = []
+        quarterly_assessments_marks = []
+        written_weightage = 0
+        performance_task_weightage = 0
+        quarterly_assessment_weightage = 0
+
+        # Calculate the total weighted marks
+        for sa in student_assessments:
+            if sa.assessment.assessment_type == 'WRITTEN_WORKS':
+                written_works_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if written_weightage == 0:
+                    written_weightage = sa.assessment.subject.written_work / 100
+            if sa.assessment.assessment_type == 'PERFORMANCE_TASK':
+                performance_tasks_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if performance_task_weightage == 0:
+                    performance_task_weightage = sa.assessment.subject.performance_task / 100
+            if sa.assessment.assessment_type == 'QUARTERLY_ASSESSMENT':
+                quarterly_assessments_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if quarterly_assessment_weightage == 0:
+                    quarterly_assessment_weightage = sa.assessment.subject.quartery_assessment / 100
+
+        written_works = {"weightage": written_weightage,
+                         "obtained_marks": written_works_marks, }
+        performance_tasks = {"weightage": performance_task_weightage,
+                             "obtained_marks": performance_tasks_marks, }
+        quarterly_assessments = {
+            "weightage": quarterly_assessment_weightage, "obtained_marks": quarterly_assessments_marks, }
+
+        my_gap = gpa_calculate(
+            written_works, performance_tasks, quarterly_assessments)
+
+        # Modify the response data to include the average GPA
+        response.data['gpa'] = my_gap
+        return response

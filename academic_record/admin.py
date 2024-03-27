@@ -29,6 +29,7 @@ class ScheduleAdmin(BaseAdmin):
                 'teacher',
                 'section',
                 'day',
+                'is_view_grade',
                 'time_start',
                 'time_end'
             ]

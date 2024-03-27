@@ -12,6 +12,9 @@ class AcademicYear(BaseModelWithUUID):
     end_date = models.DateField()
     remarks = models.CharField(max_length=100, blank=True)
 
+    class Meta:
+        ordering = ['created_at']
+
     def __str__(self):
         return self.name
 
@@ -43,6 +46,7 @@ class Schedule(BaseModelWithUUID):
     day = models.CharField(max_length=20)
     time_start = models.TimeField()
     time_end = models.TimeField()
+    is_view_grade = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.day} {self.time_start} - {self.time_end} {self.subject.name} - {self.teacher.user.last_name} {self.teacher.user.first_name}'
