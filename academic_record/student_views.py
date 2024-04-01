@@ -77,8 +77,10 @@ class StudentAssessmentListView(generics.ListAPIView):
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()
         grading_period = self.request.GET.get('grading_period', None)
+        subject_id = self.request.GET.get('subject_id', None)
 
-        if academic_years.exists() and grading_period:
+        if academic_years.exists() and grading_period and subject_id:
+            subject = get_object_or_404(Subject, pk=subject_id)
             user = self.request.user
             current_academic = academic_years.first()
             register_users = Registration.objects.filter(
@@ -87,7 +89,9 @@ class StudentAssessmentListView(generics.ListAPIView):
             if register_users.exists():
                 # check the user wether is register to current academic or not
                 register_user = register_users.first()
-                return StudentAssessment.objects.filter(assessment__academic_year=current_academic, assessment__grading_period=grading_period, student=register_user.student).order_by('created_at', 'assessment__grading_period')
+                return StudentAssessment.objects.filter(
+                    assessment__subject=subject,
+                    assessment__academic_year=current_academic, assessment__grading_period=grading_period, student=register_user.student).order_by('created_at', 'assessment__grading_period')
 
         return []
 
