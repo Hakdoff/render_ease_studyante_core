@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from class_information.views import DepartmentListCreateView
 from user_profile.views import StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
-    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView, AttendanceTeacherListView)
+    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView, AttendanceTeacherListView, TeacherStudentOverAllGPAView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView)
 from registration.views import RegisteredStudentListView
@@ -49,6 +49,10 @@ urlpatterns += [
          name='teacher-assessments'),
     path('teacher/students/attendance', AttendanceTeacherListView.as_view(),
          name='teacher-students-attendance'),
+    path('teacher/student/over-all-gpa', TeacherStudentOverAllGPAView.as_view(),
+         name='teacher-student-gpa'),
+
+
 
 
     # Parent Profile

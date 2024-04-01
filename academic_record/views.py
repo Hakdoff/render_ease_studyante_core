@@ -1,7 +1,9 @@
 from datetime import datetime
-from rest_framework import generics, permissions,  status, viewsets
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, permissions,  status, viewsets, response
 
 from academic_record.gpa_caluclate import gpa_calculate
+from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from .serializers import (StudentAssessmentSerializers,
                           TeacherScheduleSerialzers, AttendanceSerializers)
@@ -10,6 +12,7 @@ from registration.models import Registration
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.views import APIView
 
 
 class TeacherScheduleListView(generics.ListAPIView):
@@ -191,3 +194,122 @@ class TeacherAssessmentListView(generics.ListAPIView):
         # Modify the response data to include the average GPA
         response.data['gpa'] = my_gap
         return response
+
+
+class TeacherStudentOverAllGPAView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_calculate_gap(self, student_assessments):
+
+        written_works_marks = []
+        performance_tasks_marks = []
+        quarterly_assessments_marks = []
+        written_weightage = 0
+        performance_task_weightage = 0
+        quarterly_assessment_weightage = 0
+
+        # Calculate the total weighted marks
+        for sa in student_assessments:
+            if sa.assessment.assessment_type == 'WRITTEN_WORKS':
+                written_works_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if written_weightage == 0:
+                    written_weightage = sa.assessment.subject.written_work / 100
+            if sa.assessment.assessment_type == 'PERFORMANCE_TASK':
+                performance_tasks_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if performance_task_weightage == 0:
+                    performance_task_weightage = sa.assessment.subject.performance_task / 100
+            if sa.assessment.assessment_type == 'QUARTERLY_ASSESSMENT':
+                quarterly_assessments_marks.append(
+                    sa.obtained_marks/sa.assessment.max_marks)
+                if quarterly_assessment_weightage == 0:
+                    quarterly_assessment_weightage = sa.assessment.subject.quartery_assessment / 100
+
+        written_works = {"weightage": written_weightage,
+                         "obtained_marks": written_works_marks, }
+        performance_tasks = {"weightage": performance_task_weightage,
+                             "obtained_marks": performance_tasks_marks, }
+        quarterly_assessments = {
+            "weightage": quarterly_assessment_weightage, "obtained_marks": quarterly_assessments_marks, }
+
+        return gpa_calculate(
+            written_works, performance_tasks, quarterly_assessments)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'student_id',
+                openapi.IN_QUERY,
+                description='Pass student_id to get student record, otherwise will return student gpa not found',
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+            openapi.Parameter(
+                'subject_id',
+                openapi.IN_QUERY,
+                description='Pass subject id of the student to calculate overall subject gpa otherwise will return student gpa not found',
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        user = self.request.user
+        academic_years = AcademicYear.objects.all()
+        subject_id = request.query_params.get('subject_id', None)
+        student_id = request.query_params.get('student_id', None)
+
+        if academic_years.exists() and subject_id and student_id:
+            user = self.request.user
+            current_academic = academic_years.first()
+            register_users = Registration.objects.filter(
+                academic_year=current_academic, student__user__pk=student_id)
+
+            if register_users.exists():
+                register_user = register_users.first()
+                first_grading_assessments = None
+                second_grading_assessments = None
+                third_grading_assessments = None
+                fourth_grading_assessments = None
+
+                if subject_id:
+                    subject = get_object_or_404(Subject, pk=subject_id)
+                    schedule = Schedule.objects.get(
+                        academic_year=current_academic, subject=subject, section=register_user.section)
+
+                    first_grading_assessments = StudentAssessment.objects.filter(
+                        assessment__teacher__user__pk=user.pk,
+                        assessment__academic_year=current_academic, assessment__grading_period='FIRST_GRADING', student=register_user.student, assessment__subject__pk=subject_id).order_by('created_at', 'assessment__grading_period')
+                    second_grading_assessments = StudentAssessment.objects.filter(
+                        assessment__teacher__user__pk=user.pk,
+                        assessment__academic_year=current_academic, assessment__grading_period='SECOND_GRADING', student=register_user.student, assessment__subject__pk=subject_id).order_by('created_at', 'assessment__grading_period')
+                    third_grading_assessments = StudentAssessment.objects.filter(
+                        assessment__teacher__user__pk=user.pk,
+                        assessment__academic_year=current_academic, assessment__grading_period='THIRD_GRADING', student=register_user.student, assessment__subject__pk=subject_id).order_by('created_at', 'assessment__grading_period')
+                    fourth_grading_assessments = StudentAssessment.objects.filter(
+                        assessment__teacher__user__pk=user.pk,
+                        assessment__academic_year=current_academic, assessment__grading_period='FOURTH_GRADING', student=register_user.student, assessment__subject__pk=subject_id).order_by('created_at', 'assessment__grading_period')
+
+                    data = {
+                        'first_grading': self.get_calculate_gap(first_grading_assessments),
+                        'second_grading': self.get_calculate_gap(second_grading_assessments),
+                        'third_grading': self.get_calculate_gap(third_grading_assessments),
+                        'fourth_grading': self.get_calculate_gap(fourth_grading_assessments),
+                    }
+                    if not 'N/A' in data.values():
+                        temp_total_gpa = 0
+                        for value in data.values():
+                            temp_total_gpa += float(value)
+                        temp_total_gpa = temp_total_gpa / \
+                            len(data.values())
+                        data['total_gpa'] = str(round(temp_total_gpa, 2))
+                    else:
+                        data['total_gpa'] = 'N/A'
+                    data['is_view_grade'] = True
+
+                    return response.Response(data, status=status.HTTP_200_OK)
+
+        data = {'error_message': 'Student GPA not found'}
+
+        return response.Response(data, status=status.HTTP_400_BAD_REQUEST)
