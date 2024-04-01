@@ -92,6 +92,9 @@ class StudentAssessment(BaseModelWithUUID):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     obtained_marks = models.DecimalField(max_digits=5, decimal_places=2)
 
+    def __str__(self):
+        return f'{self.assessment.name} - {self.student.user.last_name}, {self.student.user.first_name}'
+
 
 class Attendance(BaseModelWithUUID):
     schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE)
