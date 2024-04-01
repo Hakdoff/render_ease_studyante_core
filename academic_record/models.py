@@ -92,6 +92,9 @@ class StudentAssessment(BaseModelWithUUID):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     obtained_marks = models.DecimalField(max_digits=5, decimal_places=2)
 
+    class Meta:
+        unique_together = ['assessment', 'student',]
+
     def __str__(self):
         return f'{self.assessment.name} - {self.student.user.last_name}, {self.student.user.first_name}'
 
