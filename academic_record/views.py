@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.views import APIView
+from reedsolo import RSCodec, ReedSolomonError
 
 
 class TeacherScheduleListView(generics.ListAPIView):
@@ -89,6 +90,8 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
         academic_years = AcademicYear.objects.all()
 
         if academic_years.exists():
+            # rsc = RSCodec(10)
+            # student_id = rsc.decode( bytearray. )[0]
             register_students = Registration.objects.filter(
                 student__user__pk=student, academic_year=academic_years.first())
 
