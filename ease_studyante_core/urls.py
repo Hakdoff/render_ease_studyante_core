@@ -25,6 +25,7 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
+from chat import views as chat_views
 
 from ease_studyante_core import settings
 from ease_studyante_core.views import TokenViewWithUserId
@@ -52,6 +53,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls', namespace='api'),),
     path('o/login/', TokenViewWithUserId.as_view(), name='token'),
+    path("", chat_views.chatPage, name="chat-page"),
+
 ]
 
 urlpatterns += router.urls

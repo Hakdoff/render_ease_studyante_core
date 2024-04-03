@@ -41,6 +41,8 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 INSTALLED_APPS = [
     'admin_interface',
     'colorfield',
+    'daphne',
+    'channels',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -65,6 +67,15 @@ INSTALLED_APPS = [
     'api',
 ]
 
+ASGI_APPLICATION = 'ease_studyante_core.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -82,6 +93,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR / 'base/templates'),
+            os.path.join(BASE_DIR / 'chat/templates'),
         ],
         'APP_DIRS': False,
         'OPTIONS': {

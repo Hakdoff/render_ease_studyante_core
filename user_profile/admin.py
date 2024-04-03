@@ -11,7 +11,7 @@ import qrcode
 from base.admin import BaseAdmin, BaseStackedInline, User
 from .models import Student, Teacher, Parent
 from class_information.models import Department
-
+from reedsolo import RSCodec, ReedSolomonError
 
 """ 
     Base Model profile since both student, parent and teacher have common entities
@@ -91,6 +91,11 @@ class StudentCreationForm(forms.ModelForm):
                 box_size=10,
                 border=4,
             )
+            # rsc = RSCodec(10)
+            # user_id = str(user.pk)
+            # encoded = user_id.encode('utf-8')
+            # encoded_value = rsc.encode(bytearray(encoded))
+
             # You can pass any data you want to encode in the QR code
             qr.add_data(user.pk)
             qr.make(fit=True)
