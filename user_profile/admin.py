@@ -104,7 +104,7 @@ class StudentCreationForm(forms.ModelForm):
             # Save QR code image to ImageField
             buffer = BytesIO()
             img.save(buffer)
-            file_name = f'qr_code_{encoded_value}.png'
+            file_name = f'qr_code_{user.pk}.png'
             file_buffer = buffer.getvalue()
             instance.qr_code_photo.save(file_name, InMemoryUploadedFile(
                 file=BytesIO(file_buffer),

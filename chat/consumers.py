@@ -1,5 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.utils import timezone
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -39,6 +40,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 })
 
     async def sendMessage(self, event):
+        # TODO handle save messages
         message = event["message"]
         username = event["username"]
-        await self.send(text_data=json.dumps({"message": message, "username": username}))
+        time_stamp = timezone.now().strftime('%Y-%m-%dT%H:%M:%S.%f')
+        await self.send(text_data=json.dumps({"message": message, "username": username, "time_stamp": time_stamp}))
