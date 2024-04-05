@@ -21,27 +21,27 @@ django_asgi_app = get_asgi_application()
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ease_studyante_core.settings')
 
 # Development mode: HTTP
-# application = ProtocolTypeRouter({
-#     "http": get_asgi_application(),
-#     "websocket": AuthMiddlewareStack(
-#         URLRouter(
-#             routing.websocket_urlpatterns
-#         )
-#     )
-# })
-# Production mode: HTTPS
-
 application = ProtocolTypeRouter({
-    "http": AuthMiddlewareStack(
-        AllowedHostsOriginValidator(
-            get_asgi_application()
-        )
-    ),
+    "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
             routing.websocket_urlpatterns
         )
     )
 })
+# Production mode: HTTPS
+
+# application = ProtocolTypeRouter({
+#     "http": AuthMiddlewareStack(
+#         AllowedHostsOriginValidator(
+#             get_asgi_application()
+#         )
+#     ),
+#     "websocket": AuthMiddlewareStack(
+#         URLRouter(
+#             routing.websocket_urlpatterns
+#         )
+#     )
+# })
 
 ASGI_APPLICATION = 'ease_studyante_core.asgi.application'
