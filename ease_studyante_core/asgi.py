@@ -34,11 +34,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ease_studyante_core.settings')
 django.setup()
 
 application = ProtocolTypeRouter({
-    "https": AuthMiddlewareStack(
-        AllowedHostsOriginValidator(
-            get_asgi_application()
-        )
-    ),
+    "https": django_asgi_app,
     "websocket": AuthMiddlewareStack(
         URLRouter(
             routing.websocket_urlpatterns
