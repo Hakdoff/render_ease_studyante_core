@@ -7,6 +7,7 @@ cffi==1.16.0
 channels==4.0.0
 chardet==4.0.0
 charset-normalizer==3.3.2
+click==8.1.7
 constantly==23.10.4
 cryptography==42.0.5
 daphne==4.1.0
@@ -26,6 +27,7 @@ django-reversion==3.0.9
 djangorestframework==3.12.4
 drf-yasg==1.21.7
 gunicorn==20.1.0
+h11==0.14.0
 h2==4.1.0
 hpack==4.0.0
 hyperframe==6.0.1
@@ -63,4 +65,5 @@ txaio==23.1.1
 typing-extensions==4.10.0
 uritemplate==4.1.1
 urllib3==1.26.4
+uvicorn==0.29.0
 zope.interface==6.2
