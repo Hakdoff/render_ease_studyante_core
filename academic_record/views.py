@@ -6,7 +6,7 @@ from academic_record.gpa_caluclate import gpa_calculate
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from .serializers import (StudentAssessmentSerializers,
-                          TeacherScheduleSerialzers, AttendanceSerializers)
+                          TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment
 from registration.models import Registration
 from rest_framework.response import Response
@@ -14,6 +14,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.views import APIView
 from reedsolo import RSCodec, ReedSolomonError
+from registration.models import Registration
+from django.db.models import Q
 
 
 class TeacherScheduleListView(generics.ListAPIView):
@@ -316,3 +318,32 @@ class TeacherStudentOverAllGPAView(APIView):
         data = {'error_message': 'Student GPA not found'}
 
         return response.Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TeacherSearchStudentChatListView(generics.ListAPIView):
+    serializer_class = StudentRegisterSerializers
+    queryset = Registration.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'q',
+                openapi.IN_QUERY,
+                description='Query params for student search it will be based on surname',
+                type=openapi.TYPE_STRING
+            )
+        ],
+        operation_id='list_students'
+    )
+    def get_queryset(self):
+        q = self.request.GET.get('q', None)
+
+        user = self.request.user
+        schedules = Schedule.objects.filter(
+            teacher__user=user).values('section')
+
+        if schedules.exists() and q:
+            return Registration.objects.filter(Q(section__pk__in=schedules) & Q(Q(student__user__first_name__icontains=q) | Q(student__user__last_name__icontains=q))).order_by('student__user__lastname')
+
+        return []

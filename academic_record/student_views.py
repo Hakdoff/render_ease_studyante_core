@@ -4,7 +4,7 @@ from rest_framework import generics, permissions, response, status, exceptions
 from academic_record.gpa_caluclate import gpa_calculate
 from core.paginate import ExtraSmallResultsSetPagination
 from .serializers import (StudentScheduleSerialzers,
-                          AttendanceSerializers, StudentAssessmentSerializers)
+                          AttendanceSerializers, StudentAssessmentSerializers, TeacherChatSerialzers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment
 from class_information.models import Subject
 from registration.models import Registration
@@ -210,3 +210,26 @@ class StudentOverAllGPAView(APIView):
         data = {'error_message': 'Student GPA not found'}
 
         return response.Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StudentChatTeacherListView(generics.ListAPIView):
+    serializer_class = TeacherChatSerialzers
+    queryset = Schedule.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+
+        if academic_years.exists():
+            user = self.request.user
+            current_academic = academic_years.first()
+            register_users = Registration.objects.filter(
+                academic_year=current_academic, student__user__pk=user.pk)
+
+            if register_users.exists():
+                # check the user wether is register to current academic or not
+                register_user = register_users.first()
+                return Schedule.objects.filter(academic_year=current_academic, section__pk=register_user.section.pk).order_by('time_start')
+
+        return []

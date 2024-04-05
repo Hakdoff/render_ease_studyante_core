@@ -4,9 +4,11 @@ from rest_framework.routers import DefaultRouter
 from class_information.views import DepartmentListCreateView
 from user_profile.views import StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
-    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView, AttendanceTeacherListView, TeacherStudentOverAllGPAView)
+    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView,
+    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView)
 from academic_record.student_views import (
-    StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView)
+    StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView,
+    StudentChatTeacherListView)
 from registration.views import RegisteredStudentListView
 
 app_name = 'api'
@@ -35,6 +37,8 @@ urlpatterns += [
          name='student-assessments'),
     path('student/over-all', StudentOverAllGPAView.as_view(),
          name='student-gpa'),
+    path('student/chat-list', StudentChatTeacherListView.as_view(),
+         name='student-chat-list'),
 
 
 
@@ -51,6 +55,8 @@ urlpatterns += [
          name='teacher-students-attendance'),
     path('teacher/student/over-all-gpa', TeacherStudentOverAllGPAView.as_view(),
          name='teacher-student-gpa'),
+    path('teacher/chat-list', TeacherSearchStudentChatListView.as_view(),
+         name='teacher-chat-list'),
 
 
 
