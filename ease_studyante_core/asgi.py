@@ -8,7 +8,6 @@ https://docs.djangoproject.com/en/4.2/howto/deployment/asgi/
 """
 
 import os
-import django
 
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
@@ -31,15 +30,16 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ease_studyante_core.settings')
 #     )
 # })
 # Production mode: HTTPS
-django.setup()
 
-application = ProtocolTypeRouter({
-    "https": django_asgi_app,
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            routing.websocket_urlpatterns
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                routing.websocket_urlpatterns
+            )
         )
-    )
-})
+    }
+)
 
 ASGI_APPLICATION = 'ease_studyante_core.asgi.application'
