@@ -20,6 +20,9 @@ from chat import routing
 from channels.security.websocket import AllowedHostsOriginValidator
 from channels.auth import AuthMiddlewareStack
 
+django.setup()
+
+
 django_asgi_app = get_asgi_application()
 
 
@@ -35,7 +38,6 @@ django_asgi_app = get_asgi_application()
 #     )
 # })
 # Production mode: HTTPS
-django.setup()
 
 application = ProtocolTypeRouter(
     {
