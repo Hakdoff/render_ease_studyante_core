@@ -32,7 +32,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ease_studyante_core.settings')
 # Production mode: HTTPS
 
 application = ProtocolTypeRouter({
-    "http": AuthMiddlewareStack(
+    "https": AuthMiddlewareStack(
         AllowedHostsOriginValidator(
             get_asgi_application()
         )
