@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions,  status, viewsets, response
 
 from academic_record.gpa_caluclate import gpa_calculate
+from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from .serializers import (StudentAssessmentSerializers,
@@ -16,6 +17,7 @@ from rest_framework.views import APIView
 from reedsolo import RSCodec, ReedSolomonError
 from registration.models import Registration
 from django.db.models import Q
+import uuid
 
 
 class TeacherScheduleListView(generics.ListAPIView):
@@ -91,41 +93,42 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
         student = request.data.get('student', None)
         academic_years = AcademicYear.objects.all()
 
-        if academic_years.exists():
-            # rsc = RSCodec(10)
-            # student_id = rsc.decode( bytearray. )[0]
-            register_students = Registration.objects.filter(
-                student__user__pk=student, academic_year=academic_years.first())
+        if is_valid_uuid(student):
+            if academic_years.exists():
+                # rsc = RSCodec(10)
+                # student_id = rsc.decode( bytearray. )[0]
+                register_students = Registration.objects.filter(
+                    student__user__pk=student, academic_year=academic_years.first())
 
-        if register_students.exists():
-            teacher = self.request.user
-            register_student = register_students.first()
-            schedules = Schedule.objects.filter(
-                teacher__user__pk=teacher.pk, section__pk=register_student.section.pk)
-            current_date = datetime.now()
+            if register_students.exists():
+                teacher = self.request.user
+                register_student = register_students.first()
+                schedules = Schedule.objects.filter(
+                    teacher__user__pk=teacher.pk, section__pk=register_student.section.pk)
+                current_date = datetime.now()
 
-            attendances = Attendance.objects.filter(
-                student__pk=register_student.student.pk, time_in__date=current_date)
+                attendances = Attendance.objects.filter(
+                    student__pk=register_student.student.pk, time_in__date=current_date)
 
-            if schedules.exists() and not attendances.exists():
-                schedule = schedules.first()
+                if schedules.exists() and not attendances.exists():
+                    schedule = schedules.first()
 
-                attendance = Attendance.objects.create(
-                    student=register_student.student, schedule=schedule, is_present=True)
+                    attendance = Attendance.objects.create(
+                        student=register_student.student, schedule=schedule, is_present=True)
 
-                serializer = AttendanceSerializers(attendance)
+                    serializer = AttendanceSerializers(attendance)
 
-                return Response(serializer.data)
-            serializer = AttendanceSerializers(attendances.first())
-            serializer_data = serializer.data
-            error = {
-                "error_message": "Student already time in",
-            }
-            serializer_data.update(error)
+                    return Response(serializer.data)
+                serializer = AttendanceSerializers(attendances.first())
+                serializer_data = serializer.data
+                error = {
+                    "error_message": "Student already time in",
+                }
+                serializer_data.update(error)
 
-            return Response(data=serializer_data, status=status.HTTP_200_OK)
+                return Response(data=serializer_data, status=status.HTTP_200_OK)
         error = {
-            "error_message": "Student not found",
+            "error_message": "QR Code is invalid",
         }
         return Response(data=error, status=status.HTTP_400_BAD_REQUEST)
 
