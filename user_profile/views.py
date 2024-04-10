@@ -147,6 +147,7 @@ class ChangePasswordView(generics.UpdateAPIView):
                 if password_validation:
                     self.object.set_password(
                         serializer.data.get("new_password"))
+                    self.object.is_new_user = False
                 else:
                     return response.Response({"error_message":
                                               "Password must contain a combination of letters and numbers"},
@@ -157,14 +158,14 @@ class ChangePasswordView(generics.UpdateAPIView):
                                          status=status.HTTP_400_BAD_REQUEST)
 
             self.object.save()
-            response = {
+            data = {
                 'status': 'success',
                 'code': status.HTTP_200_OK,
                 'message': 'Password updated successfully',
                 'data': []
             }
 
-            return response.Response(response)
+            return response.Response(data)
 
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

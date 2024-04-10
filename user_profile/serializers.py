@@ -13,7 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'username',
-            'get_full_name'
+            'get_full_name',
+            'is_new_user'
         )
 
         extra_kwargs = {

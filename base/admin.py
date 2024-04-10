@@ -341,7 +341,7 @@ class UserAdmin(BaseUserAdmin, BaseAdmin):
             'fields': ('username', 'password',),
         }),
         ('Personal Information', {
-            'fields': ('first_name', 'last_name', 'email'),
+            'fields': ('first_name', 'last_name', 'email', 'is_new_user'),
         }),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions',),

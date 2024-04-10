@@ -36,6 +36,7 @@ class UserManager(OldUserManager):
 
 class User(AbstractUser, BaseModelWithUUID):
     objects = UserManager()
+    is_new_user = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-created_at']
