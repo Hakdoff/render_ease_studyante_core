@@ -290,7 +290,6 @@ class StudentAdmin(admin.ModelAdmin):
                 'year_level',
                 'profile_photo',
                 'qr_code_photo',
-                'is_new_user',
             ],
         }),
     )

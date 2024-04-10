@@ -49,6 +49,7 @@ class StudentProfileView(generics.RetrieveAPIView):
                     "gender": user_profile.gender,
                     "age": user_profile.age,
                     "profilePhoto": request.build_absolute_uri(user_profile.profile_photo.url) if user_profile.profile_photo else None,
+                    "is_new_user": user_profile.user.is_new_user,
 
                 }
 
@@ -80,6 +81,7 @@ class TeacherProfileView(generics.RetrieveAPIView):
                 "email": user.email,
                 "department": user_profile.department.name,
                 "profilePhoto": request.build_absolute_uri(user_profile.profile_photo.url) if user_profile.profile_photo else None,
+                "is_new_user": user_profile.user.is_new_user,
             }
 
             return response.Response(data, status=status.HTTP_200_OK)
@@ -111,6 +113,7 @@ class ParentProfileView(generics.RetrieveAPIView):
                 "email": user.email,
                 "department": user_profile.department.name,
                 "profilePhoto": request.build_absolute_uri(user_profile.profile_photo.url) if user_profile.profile_photo else None,
+                "is_new_user": user_profile.user.is_new_user,
 
             }
 
