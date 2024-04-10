@@ -271,6 +271,7 @@ class ParentCreationForm(forms.ModelForm):
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('user', 'year_level')
     search_fields = ['user__email', 'user__firstname', 'user__lastname']
+    list_filter = ['user',]
     form = StudentCreationForm
     formfield_querysets = {
         'user': lambda: User.objects.all(),
@@ -304,8 +305,9 @@ class StudentAdmin(admin.ModelAdmin):
 
 
 @admin.register(Teacher)
-class TeacherAdmin(BaseAdmin):
-    list_fields = ('user', 'department')
+class TeacherAdmin(admin.ModelAdmin):
+    list_display = ['user', 'department']
+    list_filter = ['user', 'department']
     form = TeacherCreationForm
     formfield_querysets = {
         'user': lambda: User.objects.all(),
@@ -335,7 +337,7 @@ class TeacherAdmin(BaseAdmin):
     #         },
     #     ),
     # )
-    search_fields = ('user__first_name', 'user__last_name')
+    search_fields = ['user__first_name', 'user__last_name']
     def get_form(self, request, obj=None, **kwargs):
         form = super(TeacherAdmin, self).get_form(request, obj, **kwargs)
         if obj is not None:
@@ -347,10 +349,11 @@ class TeacherAdmin(BaseAdmin):
 
 
 @admin.register(Parent)
-class ParentAdmin(BaseAdmin):
+class ParentAdmin(admin.ModelAdmin):
     form = ParentCreationForm
-    list_fields = ('user', 'address', 'contact_number',
-                   'age', 'gender', 'profile_photo')
+    list_display = ['user', 'address', 'contact_number',
+                   'age', 'gender', 'profile_photo']
+    list_filter =  ['user',]
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'students': lambda: Student.objects.all()
