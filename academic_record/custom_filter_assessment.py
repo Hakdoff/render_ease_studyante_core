@@ -18,6 +18,6 @@ class CustomFilterAssessment(filters.BaseFilterBackend):
                 or_query).distinct()
 
         if name:
-            queryset.filter(name__icontains=name)
+            queryset = queryset.filter(name__icontains=name)
 
         return queryset.order_by('-created_at')
