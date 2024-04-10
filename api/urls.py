@@ -2,14 +2,15 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from class_information.views import DepartmentListCreateView
-from user_profile.views import StudentProfileView, TeacherProfileView, ParentProfileView
+from user_profile.views import ChangePasswordView, RequestPasswordResetEmail, StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
-    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherAssessmentListView,
-    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView)
+    TeacherScheduleListView, AttendanceTeacherViewSet, TeacherStudentAssessmentListView,
+    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView, TeacherAssessmentListView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView,
     StudentChatTeacherListView)
 from registration.views import RegisteredStudentListView
+from django.contrib.auth import views as auth_views
 
 app_name = 'api'
 
@@ -20,6 +21,15 @@ router.register(r'qr_code', AttendanceTeacherViewSet,
 urlpatterns = router.urls
 
 urlpatterns += [
+    path('change-password', ChangePasswordView.as_view(), name='change-password'),
+
+    path('forgot-password', RequestPasswordResetEmail.as_view(),
+         name='forgot-password '),
+    path('password-reset-confirm/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(),
+         name='password-reset-confirm'),
+
+
     # DEPARTMENT
     path('department/list/<pk>', DepartmentListCreateView.as_view(),
          name='department'),
@@ -49,8 +59,12 @@ urlpatterns += [
          name='teacher-schedules'),
     path('teacher/registered/students', RegisteredStudentListView.as_view(),
          name='teacher-registered-students'),
-    path('teacher/assessments', TeacherAssessmentListView.as_view(),
+    path('teacher/assessments', TeacherStudentAssessmentListView.as_view(),
          name='teacher-assessments'),
+    path('teacher/web/assessments', TeacherAssessmentListView.as_view(),
+         name='teacher-web-assessments'),
+
+
     path('teacher/students/attendance', AttendanceTeacherListView.as_view(),
          name='teacher-students-attendance'),
     path('teacher/student/over-all-gpa', TeacherStudentOverAllGPAView.as_view(),

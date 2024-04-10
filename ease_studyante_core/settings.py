@@ -96,6 +96,7 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR / 'base/templates'),
             os.path.join(BASE_DIR / 'chat/templates'),
+            os.path.join(BASE_DIR / 'templates'),
         ],
         'APP_DIRS': False,
         'OPTIONS': {
@@ -120,16 +121,16 @@ WSGI_APPLICATION = 'ease_studyante_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
-}
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
+#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 # REST CONFIG
 OAUTH2_PROVIDER = {
@@ -203,3 +204,12 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+DATA_UPLOAD_MAX_MEMORY_SIZE = 26214400

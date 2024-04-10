@@ -33,7 +33,7 @@ from ease_studyante_core.views import TokenViewWithUserId
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Smart libary hub API",
+        title="Ease Studyante Core hub API",
         default_version='v1',
         description="Testing API",
         terms_of_service="https://www.google.com/policies/terms/",
@@ -54,6 +54,10 @@ urlpatterns = [
     path('api/', include('api.urls', namespace='api'),),
     path('o/login/', TokenViewWithUserId.as_view(), name='token'),
     path("", chat_views.chatPage, name="chat-page"),
+    path('password-reset-complete/',
+         auth_views.PasswordResetCompleteView.as_view(
+             template_name='password_reset_complete.html'),
+         name='password_reset_complete'),
 
 ]
 

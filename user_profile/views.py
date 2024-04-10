@@ -1,10 +1,25 @@
 from rest_framework import generics, permissions, response, status
 
 from academic_record.models import AcademicYear
+from base.models import User
+from user_profile.email import Util
 
-from .serializers import StudentSerializer, TeacherSerializer
+from .serializers import ChangePasswordSerializer, ResetPasswordEmailRequestSerializer, StudentSerializer, TeacherSerializer
 from .models import Teacher, Student
 from registration.models import Registration
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.urls import reverse
+from django.template.loader import get_template
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import smart_bytes
+from django.contrib.sites.shortcuts import get_current_site
+from datetime import (
+    datetime,
+    timedelta
+)
+from django.utils.crypto import get_random_string
+from django.conf import settings
+import re
 
 
 class StudentProfileView(generics.RetrieveAPIView):
@@ -106,3 +121,91 @@ class ParentProfileView(generics.RetrieveAPIView):
                 "error_message": "Parent not "
             }
             return response.Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    model = User
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get("old_password")):
+                return response.Response({"error_message": "Wrong old password."}, status=status.HTTP_400_BAD_REQUEST)
+            new_password_entry = serializer.data.get("new_password")
+            reg = "[^\w\d]*(([0-9]+.*[A-Za-z]+.*)|[A-Za-z]+.*([0-9]+.*))"
+            pat = re.compile(reg)
+
+            if 8 <= len(new_password_entry) <= 16:
+                password_validation = re.search(pat, new_password_entry)
+                if password_validation:
+                    self.object.set_password(
+                        serializer.data.get("new_password"))
+                else:
+                    return response.Response({"error_message":
+                                              "Password must contain a combination of letters and numbers"},
+                                             status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return response.Response({"error_message":
+                                          "Password must contain at least 8 to 16 characters"},
+                                         status=status.HTTP_400_BAD_REQUEST)
+
+            self.object.save()
+            response = {
+                'status': 'success',
+                'code': status.HTTP_200_OK,
+                'message': 'Password updated successfully',
+                'data': []
+            }
+
+            return response.Response(response)
+
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RequestPasswordResetEmail(generics.CreateAPIView):
+    serializer_class = ResetPasswordEmailRequestSerializer
+    permission_classes = []
+
+    def post(self, request):
+        email_address = request.data.get('email_address', '')
+        check_identity = User.objects.filter(email__exact=email_address)
+        if check_identity.exists():
+            identity = check_identity.first()
+            uidb64 = urlsafe_base64_encode(smart_bytes(identity.id))
+            token = PasswordResetTokenGenerator().make_token(identity)
+
+            relative_link = reverse(
+                'api:password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
+
+            current_site = get_current_site(
+                request=request).domain
+            abs_url: str = f"https://{current_site}{relative_link}"
+
+            context_email = {
+                "url": abs_url,
+                "full_name": f"{identity.first_name} {identity.last_name}"
+            }
+            message = get_template(
+                'forgot_password/index.html').render(context_email)
+
+            context = {
+                'email_body': message,
+                'to_email': identity.email,
+                'email_subject': 'Password Reset Confirmation'
+            }
+
+            Util.send_email(context)
+        else:
+            return response.Response({'error_message': 'Email not found!'}, status=status.HTTP_404_NOT_FOUND)
+
+        return response.Response(
+            {'success': 'We have sent you a link to reset your password'},
+            status=status.HTTP_200_OK
+        )

@@ -2,13 +2,15 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions,  status, viewsets, response
 
+from academic_record.custom_filter_assessment import CustomFilterAssessment
 from academic_record.gpa_caluclate import gpa_calculate
 from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
+from user_profile.models import Teacher
 from .serializers import (StudentAssessmentSerializers,
-                          TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers)
-from .models import Schedule, AcademicYear, Attendance, StudentAssessment
+                          TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers, AssessmentSerializers)
+from .models import Schedule, AcademicYear, Attendance, StudentAssessment, Assessment
 from registration.models import Registration
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
@@ -133,7 +135,7 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
         return Response(data=error, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TeacherAssessmentListView(generics.ListAPIView):
+class TeacherStudentAssessmentListView(generics.ListAPIView):
     serializer_class = StudentAssessmentSerializers
     queryset = StudentAssessment.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -349,4 +351,24 @@ class TeacherSearchStudentChatListView(generics.ListAPIView):
         if schedules.exists() and q:
             return Registration.objects.filter(Q(section__pk__in=schedules) & Q(Q(student__user__first_name__icontains=q) | Q(student__user__last_name__icontains=q))).order_by('student__user__lastname')
 
+        return []
+
+
+class TeacherAssessmentListView(generics.ListAPIView):
+    serializer_class = AssessmentSerializers
+    queryset = Assessment.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+    filter_backends = [CustomFilterAssessment]
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+        if academic_years.exists():
+            user = self.request.user
+            teacher = get_object_or_404(Teacher, user=user)
+
+            current_academic = academic_years.first()
+
+            return self.queryset.filter(
+                academic_year=current_academic, teacher=teacher)
         return []
