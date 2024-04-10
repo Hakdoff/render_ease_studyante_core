@@ -14,7 +14,8 @@ admin.site.register(AcademicYear)
 class ScheduleAdmin(BaseAdmin):
     list_fields = ('teacher', 'time_start', 'time_end',
                    'section', 'subject')
-    search_fields = ('teacher', 'section', 'subject')
+    search_fields = ('teacher__user__first_name',
+                     'teacher__user__last_name', 'section__name', 'subject__name')
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
