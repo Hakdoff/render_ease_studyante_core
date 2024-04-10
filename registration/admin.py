@@ -9,9 +9,10 @@ from django import forms
 
 
 @admin.register(Registration)
-class RegistrationAdminView(BaseAdmin):
-    search_fields = ['user__email', 'user__firstname', 'user__lastname']
-    list_fields = ('student', 'section', 'academic_year')
+class RegistrationAdminView(admin.ModelAdmin):
+    search_fields = ['student__user__last_name', 'student__user__first_name', 'section__name']
+    list_display = ['student', 'section', 'academic_year']
+    list_filter = ['student', 'section__name']
     formfield_querysets = {
         'section': lambda: Section.objects.all(),
         'student': lambda: Student.objects.all(),

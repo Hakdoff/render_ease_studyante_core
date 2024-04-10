@@ -3,18 +3,30 @@ from django import forms
 
 from base.admin import BaseAdmin
 from class_information.models import Section, Subject
-from user_profile.models import Teacher
+from user_profile.models import Student, Teacher
 
 from .models import Assessment, Attendance, Schedule, StudentAssessment, Grade, AcademicYear
 
-admin.site.register(AcademicYear)
-
+@admin.register(AcademicYear)
+class AcademicYearView(admin.ModelAdmin):
+    list_display = ['name', 'start_date', 'end_date']
+    search_fields = ['name', 'start_date', 'end_date']
+    list_filter = ('name',)
+    edit_fields = (
+        ('Department', {
+            'fields': [
+                'code',
+                'name',
+            ]
+        }),
+    )
 
 @admin.register(Schedule)
-class ScheduleAdmin(BaseAdmin):
-    list_fields = ('teacher', 'time_start', 'time_end',
-                   'section', 'subject')
-    search_fields = ('teacher', 'section', 'subject')
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ['teacher', 'time_start', 'time_end',
+                   'section', 'subject']
+    search_fields = ['teacher', 'section', 'subject']
+    list_filter = ['teacher',]
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
@@ -58,7 +70,65 @@ class ScheduleAdmin(BaseAdmin):
         return super().add_view(request, *args, **kwargs)
 
 
-admin.site.register(Attendance)
-admin.site.register(Assessment)
-admin.site.register(StudentAssessment)
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ['student', 'schedule',  'is_present', 'attendance_date']
+    search_fields = ['student__user__last_name','student__user__first_name',]
+    list_filter = ['student',]
+    formfield_querysets = {
+        'student': lambda: Student.objects.all(),
+        'schedule': lambda: Schedule.objects.all(),
+    }
+    edit_fields = (
+        ('Attendance', {
+            'fields': [
+                'schedule',
+                'student',
+                'time_in',
+                'time_out',
+                'is_present',
+                'attendance_date',
+            ]
+        }),
+    )
+
+@admin.register(Assessment)
+class AssessmentAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'subject__name', 'teacher__user__first_name', 'teacher__user__last_name']
+    list_display = ['name', 'subject', 'teacher', 'max_marks']
+    list_filter = ['subject__name', 'teacher']
+    formfield_querysets = {
+        'subject': lambda: Subject.objects.all(),
+        'teacher': lambda: Teacher.objects.all(),
+        'section': lambda: Section.objects.all(),
+        'academic_year': lambda: AcademicYear.objects.all(),
+    }
+    edit_fields = (('Assessment', {
+            'fields': [
+                'academic_year',
+                'subject',
+                'teacher',
+                'name',
+                'assessment_type',
+                'task_type',
+                'max_marks',
+                'grading_period'
+            ]
+        }),)
+@admin.register(StudentAssessment)
+class StudentAssessmentAdmin(admin.ModelAdmin):
+    search_fields = ['assessment__name', 'student__user__last_name', 'student__user__first_name',]
+    list_display = ['assessment', 'student', 'obtained_marks']
+    list_filter = ['assessment', 'student',]
+    formfield_querysets = {
+        'assessment': lambda: StudentAssessment.objects.all(),
+        'student': lambda: Student.objects.all()
+    }
+    edit_fields = (('Student Assessment', {
+            'fields': [
+                'assessment',
+                'student',
+                'obtained_marks',
+            ]
+        }),)
 admin.site.register(Grade)
