@@ -66,7 +66,7 @@ class ScheduleAdmin(admin.ModelAdmin):
     def add_view(self, request, *args, **kwargs):
         # This method is called when the admin page for adding a new Schedule is requested
         # We include the subject field in the form to ensure its value is available in the form data
-        self.fields = ('subject', 'teacher', 'section',
+        self.fields = ('academic_year', 'subject', 'teacher', 'section',
                        'day', 'time_start', 'time_end')
         return super().add_view(request, *args, **kwargs)
 
@@ -93,18 +93,23 @@ class AttendanceAdmin(admin.ModelAdmin):
         }),
     )
 
+class StudentAssessmentTabularInLine(admin.TabularInline):
+    model = StudentAssessment
+    fields = ('assessment', 'student', 'obtained_marks')
 @admin.register(Assessment)
-class AssessmentAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'subject__name', 'teacher__user__first_name', 'teacher__user__last_name']
-    list_display = ['name', 'subject', 'teacher', 'max_marks']
-    list_filter = ['subject__name', 'teacher']
+class AssessmentAdmin(BaseAdmin):
+    list_fields = ('name', 'subject', 'academic_year')
+    search_fields = ('name',)
+    ordering = ('-name',)
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
-        'section': lambda: Section.objects.all(),
         'academic_year': lambda: AcademicYear.objects.all(),
     }
-    edit_fields = (('Assessment', {
+    list_filter = ('assessment_type',)
+    inlines = [StudentAssessmentTabularInLine,]
+    edit_fields = (
+        ('Assessment Information', {
             'fields': [
                 'academic_year',
                 'subject',
@@ -115,7 +120,8 @@ class AssessmentAdmin(admin.ModelAdmin):
                 'max_marks',
                 'grading_period'
             ]
-        }),)
+        }),
+    )
 @admin.register(StudentAssessment)
 class StudentAssessmentAdmin(admin.ModelAdmin):
     search_fields = ['assessment__name', 'student__user__last_name', 'student__user__first_name',]
