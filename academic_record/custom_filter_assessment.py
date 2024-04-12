@@ -21,3 +21,25 @@ class CustomFilterAssessment(filters.BaseFilterBackend):
             queryset = queryset.filter(name__icontains=name)
 
         return queryset.order_by('-created_at')
+
+
+class CustomFilterStudentAssessment(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search_fields = request.query_params.get('search_fields')
+        student_name = request.query_params.get('student_name', None)
+
+        if search_fields:
+            search_fields = search_fields.split(',')
+            or_query = Q()
+            for field in search_fields:
+                field_value = request.query_params.get(field)
+                if field_value:
+                    or_query &= Q(**{f'{field}': field_value})
+            queryset = queryset.filter(
+                or_query).distinct()
+
+        if student_name:
+            queryset = queryset.filter(
+                Q(student__user__first_name__icontains=student_name) | Q(student__user__last_name__icontains=student_name))
+
+        return queryset.order_by('-created_at')

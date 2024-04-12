@@ -50,15 +50,16 @@ class AssessmentSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Assessment
-        exclude = ['created_at', 'updated_at']
+        exclude = ['updated_at']
 
 
 class StudentAssessmentSerializers(serializers.ModelSerializer):
     assessment = AssessmentSerializers()
+    student = StudentSerializer(read_only=True)
 
     class Meta:
         model = StudentAssessment
-        fields = ['assessment', 'obtained_marks']
+        fields = ['assessment', 'obtained_marks', 'student', 'created_at']
 
     def __init__(self, *args, **kwargs):
         # init context and request

@@ -5,7 +5,8 @@ from class_information.views import DepartmentListCreateView
 from user_profile.views import ChangePasswordView, RequestPasswordResetEmail, StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
     TeacherScheduleListView, AttendanceTeacherViewSet, TeacherStudentAssessmentListView,
-    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView, TeacherAssessmentListView)
+    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView,
+    TeacherAssessmentListView, TeacherAssessmentStudentListView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView,
     StudentChatTeacherListView)
@@ -61,6 +62,9 @@ urlpatterns += [
          name='teacher-registered-students'),
     path('teacher/assessments', TeacherStudentAssessmentListView.as_view(),
          name='teacher-assessments'),
+    path('teacher/student/assessments', TeacherAssessmentStudentListView.as_view(),
+         name='teacher-assessments-student'),
+
     path('teacher/web/assessments', TeacherAssessmentListView.as_view(),
          name='teacher-web-assessments'),
 

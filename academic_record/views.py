@@ -2,7 +2,7 @@ from datetime import datetime
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions,  status, viewsets, response
 
-from academic_record.custom_filter_assessment import CustomFilterAssessment
+from academic_record.custom_filter_assessment import CustomFilterAssessment, CustomFilterStudentAssessment
 from academic_record.gpa_caluclate import gpa_calculate
 from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
@@ -371,4 +371,24 @@ class TeacherAssessmentListView(generics.ListAPIView):
 
             return self.queryset.filter(
                 academic_year=current_academic, teacher=teacher)
+        return []
+
+
+class TeacherAssessmentStudentListView(generics.ListAPIView):
+    serializer_class = StudentAssessmentSerializers
+    queryset = StudentAssessment.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+    filter_backends = [CustomFilterStudentAssessment]
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+        if academic_years.exists():
+            user = self.request.user
+            teacher = get_object_or_404(Teacher, user=user)
+
+            current_academic = academic_years.first()
+
+            return self.queryset.filter(
+                assessment__academic_year=current_academic,  assessment__teacher=teacher)
         return []
