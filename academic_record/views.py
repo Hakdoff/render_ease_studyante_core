@@ -382,13 +382,22 @@ class TeacherAssessmentStudentListView(generics.ListAPIView):
     filter_backends = [CustomFilterStudentAssessment]
 
     def get_queryset(self):
+        section_id = self.request.GET.get('section_id', None)
+        subject_id = self.request.GET.get('subject_id', None)
+
         academic_years = AcademicYear.objects.all()
         if academic_years.exists():
             user = self.request.user
             teacher = get_object_or_404(Teacher, user=user)
+            schedules = Schedule.objects.filter(
+                section__pk=section_id, teacher=teacher, subject__pk=subject_id)
 
-            current_academic = academic_years.first()
+            if schedules.exists():
+                schedule = schedules.first()
+                current_academic = academic_years.first()
+                students = Registration.objects.filter(
+                    section=schedule.section).values('student')
 
-            return self.queryset.filter(
-                assessment__academic_year=current_academic,  assessment__teacher=teacher)
+                return self.queryset.filter(
+                    assessment__academic_year=current_academic,  assessment__teacher=teacher, student__in=students)
         return []
