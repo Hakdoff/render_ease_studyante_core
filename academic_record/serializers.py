@@ -55,11 +55,12 @@ class AssessmentSerializers(serializers.ModelSerializer):
 
 class StudentAssessmentSerializers(serializers.ModelSerializer):
     assessment = AssessmentSerializers()
-    student = StudentSerializer(read_only=True)
+    student = StudentSerializer()
 
     class Meta:
         model = StudentAssessment
-        fields = ['assessment', 'obtained_marks', 'student', 'created_at']
+        fields = ['pk', 'assessment',
+                  'obtained_marks', 'student', 'created_at']
 
     def __init__(self, *args, **kwargs):
         # init context and request

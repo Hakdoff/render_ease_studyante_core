@@ -6,7 +6,7 @@ from user_profile.views import ChangePasswordView, RequestPasswordResetEmail, St
 from academic_record.views import (
     TeacherScheduleListView, AttendanceTeacherViewSet, TeacherStudentAssessmentListView,
     AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView,
-    TeacherAssessmentListView, TeacherAssessmentStudentListView)
+    TeacherAssessmentListView, TeacherAssessmentStudentListView, StudentAssessmentUpdateOrCreateView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView,
     StudentChatTeacherListView)
@@ -75,6 +75,8 @@ urlpatterns += [
          name='teacher-student-gpa'),
     path('teacher/chat-list', TeacherSearchStudentChatListView.as_view(),
          name='teacher-chat-list'),
+    path('teacher/update-create-student-assessment', StudentAssessmentUpdateOrCreateView.as_view(),
+         name='update-create-student-assessment'),
 
 
 

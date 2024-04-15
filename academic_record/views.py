@@ -7,7 +7,7 @@ from academic_record.gpa_caluclate import gpa_calculate
 from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
-from user_profile.models import Teacher
+from user_profile.models import Student, Teacher
 from .serializers import (StudentAssessmentSerializers,
                           TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers, AssessmentSerializers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment, Assessment
@@ -401,3 +401,34 @@ class TeacherAssessmentStudentListView(generics.ListAPIView):
                 return self.queryset.filter(
                     assessment__academic_year=current_academic,  assessment__teacher=teacher, student__in=students)
         return []
+
+
+class StudentAssessmentUpdateOrCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Extract the IDs from the request data
+        student_assessment_id = request.data.get('id')
+        assessment_id = request.data.get('assessment_id')
+        student_id = request.data.get('student_id')
+        obtained_marks = request.data.get('obtained_marks')
+
+        # Create the StudentAssessment instance
+        student = Student.objects.get(pk=student_id)
+        assessment = Assessment.objects.get(pk=assessment_id)
+
+        if student_assessment_id == "-1":
+            # CREATE ASSESSMET
+            student_assessment = StudentAssessment.objects.create(
+                student=student, assessment=assessment, obtained_marks=obtained_marks)
+            serializer = StudentAssessmentSerializers(student_assessment)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        student_assessments = StudentAssessment.objects.filter(
+            pk=student_assessment_id,
+            student=student, assessment=assessment)
+        student_assessments.update(obtained_marks=obtained_marks)
+
+        serializer = StudentAssessmentSerializers(
+            student_assessments.first())
+        return Response(serializer.data, status=status.HTTP_200_OK)
