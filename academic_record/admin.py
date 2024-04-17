@@ -27,7 +27,7 @@ class ScheduleAdmin(admin.ModelAdmin):
                    'section', 'subject']
     search_fields = ('teacher__user__first_name',
                      'teacher__user__last_name', 'section__name', 'subject__name')
-    list_filter = ['teacher',]
+    list_filter = ['teacher', 'section__name', 'subject', ]
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
@@ -99,14 +99,14 @@ class StudentAssessmentTabularInLine(admin.TabularInline):
 @admin.register(Assessment)
 class AssessmentAdmin(BaseAdmin):
     list_fields = ('name', 'subject', 'academic_year')
-    search_fields = ('name',)
-    ordering = ('-name',)
+    search_fields = ('name', 'subject__name',)
+    ordering = ('name',)
     formfield_querysets = {
         'subject': lambda: Subject.objects.all(),
         'teacher': lambda: Teacher.objects.all(),
         'academic_year': lambda: AcademicYear.objects.all(),
     }
-    list_filter = ('assessment_type',)
+    list_filter = ('assessment_type', 'subject',)
     inlines = [StudentAssessmentTabularInLine,]
     edit_fields = (
         ('Assessment Information', {
