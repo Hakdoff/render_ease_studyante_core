@@ -12,8 +12,8 @@ from .models import Subject, Department, Section
 @admin.register(Subject)
 class DepartmentAdminView(admin.ModelAdmin):
     list_display = ['name', 'code', 'department', 'year_level']
-    search_fields = ['name', 'code', ]
-    list_filter = ('name', 'code',)
+    search_fields = ['name', 'year_level', 'code',]
+    list_filter = ('name', 'year_level',)
     edit_fields = (
         ('Subject', {
             'fields': [
