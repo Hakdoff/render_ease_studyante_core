@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions,  status, viewsets, response
+from rest_framework import generics, permissions,  status, viewsets, response, filters
 
 from academic_record.custom_filter_assessment import CustomFilterAssessment, CustomFilterStudentAssessment
 from academic_record.gpa_caluclate import gpa_calculate
@@ -110,7 +110,7 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 current_date = datetime.now()
 
                 attendances = Attendance.objects.filter(
-                    student__pk=register_student.student.pk, time_in__date=current_date)
+                    student__pk=register_student.student.pk, time_in__date=current_date, schedule=schedule)
 
                 if schedules.exists() and not attendances.exists():
                     schedule = schedules.first()
@@ -359,7 +359,8 @@ class TeacherAssessmentListView(generics.ListAPIView):
     queryset = Assessment.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = ExtraSmallResultsSetPagination
-    filter_backends = [CustomFilterAssessment]
+    filter_backends = [CustomFilterAssessment, filters.OrderingFilter]
+    ordering_fileds = ['name',]
 
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()

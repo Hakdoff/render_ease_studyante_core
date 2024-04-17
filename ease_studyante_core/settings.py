@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'drf_yasg',
     'corsheaders',
+    'django_crontab',
 
 
     'base',
@@ -113,6 +114,11 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+CRONJOBS = [
+    ('59 23 * * *', 'academic_record.tasks.perform_end_of_day_tasks'),
+    # This will run the function 'perform_end_of_day_tasks' at 11:59 PM every day
 ]
 
 WSGI_APPLICATION = 'ease_studyante_core.wsgi.application'
