@@ -19,24 +19,6 @@ class AcademicYear(BaseModelWithUUID):
         return self.name
 
 
-class Grade(BaseModelWithUUID):
-    GRADING_PERIOD_CHOICES = (
-        ('First Grading', 'First Grading'),
-        ('Second Grading', 'Second Grading'),
-        ('Third Grading', 'Third Grading'),
-        ('Fourth Grading', 'Fourth Grading'),
-    )
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    grading_period = models.CharField(
-        max_length=255, choices=GRADING_PERIOD_CHOICES)
-    marks = models.DecimalField(max_digits=5, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.student} - {self.subject} - {self.grading_period} - {self.marks}"
-
-
 class Schedule(BaseModelWithUUID):
     academic_year = models.ForeignKey(
         AcademicYear, related_name='academic_schedule', on_delete=models.CASCADE)

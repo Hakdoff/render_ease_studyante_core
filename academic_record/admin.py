@@ -5,7 +5,8 @@ from base.admin import BaseAdmin
 from class_information.models import Section, Subject
 from user_profile.models import Student, Teacher
 
-from .models import Assessment, Attendance, Schedule, StudentAssessment, Grade, AcademicYear
+from .models import Assessment, Attendance, Schedule, StudentAssessment, AcademicYear
+
 
 @admin.register(AcademicYear)
 class AcademicYearView(admin.ModelAdmin):
@@ -21,10 +22,11 @@ class AcademicYearView(admin.ModelAdmin):
         }),
     )
 
+
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
     list_display = ['teacher', 'time_start', 'time_end',
-                   'section', 'subject']
+                    'section', 'subject']
     search_fields = ('teacher__user__first_name',
                      'teacher__user__last_name', 'section__name', 'subject__name')
     list_filter = ['teacher', 'section__name', 'subject', ]
@@ -74,7 +76,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ['student', 'schedule',  'is_present', 'attendance_date']
-    search_fields = ['student__user__last_name','student__user__first_name',]
+    search_fields = ['student__user__last_name', 'student__user__first_name',]
     list_filter = ['student',]
     formfield_querysets = {
         'student': lambda: Student.objects.all(),
@@ -93,12 +95,15 @@ class AttendanceAdmin(admin.ModelAdmin):
         }),
     )
 
+
 class StudentAssessmentTabularInLine(admin.TabularInline):
     model = StudentAssessment
     fields = ('assessment', 'student', 'obtained_marks')
+
+
 @admin.register(Assessment)
 class AssessmentAdmin(BaseAdmin):
-    list_fields = ('name', 'subject', 'academic_year')
+    list_fields = ('name', 'teacher', 'subject', 'academic_year')
     search_fields = ('name', 'subject__name',)
     ordering = ('name',)
     formfield_querysets = {
@@ -106,7 +111,7 @@ class AssessmentAdmin(BaseAdmin):
         'teacher': lambda: Teacher.objects.all(),
         'academic_year': lambda: AcademicYear.objects.all(),
     }
-    list_filter = ('assessment_type', 'subject',)
+    list_filter = ('assessment_type', 'subject', 'teacher')
     inlines = [StudentAssessmentTabularInLine,]
     edit_fields = (
         ('Assessment Information', {
@@ -122,9 +127,12 @@ class AssessmentAdmin(BaseAdmin):
             ]
         }),
     )
+
+
 @admin.register(StudentAssessment)
 class StudentAssessmentAdmin(admin.ModelAdmin):
-    search_fields = ['assessment__name', 'student__user__last_name', 'student__user__first_name',]
+    search_fields = ['assessment__name',
+                     'student__user__last_name', 'student__user__first_name',]
     list_display = ['assessment', 'student', 'obtained_marks']
     list_filter = ['assessment', 'student',]
     formfield_querysets = {
@@ -132,10 +140,9 @@ class StudentAssessmentAdmin(admin.ModelAdmin):
         'student': lambda: Student.objects.all()
     }
     edit_fields = (('Student Assessment', {
-            'fields': [
-                'assessment',
-                'student',
-                'obtained_marks',
-            ]
-        }),)
-admin.site.register(Grade)
+        'fields': [
+            'assessment',
+            'student',
+            'obtained_marks',
+        ]
+    }),)
