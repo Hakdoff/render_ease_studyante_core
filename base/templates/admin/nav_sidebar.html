@@ -57,6 +57,11 @@
         </table>
     </div>
     {% endfor %}
+        <a href="{% url 'dashboard' %}" class="section special-button">
+        <span class="app-name">
+            Dashboard
+        </span>
+    </a>
     {% else %}
     <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
     {% endif %}

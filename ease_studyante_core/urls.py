@@ -26,6 +26,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
 from chat import views as chat_views
+from dashboard.views import dashboard_detail_view, dashboard_view
 
 from ease_studyante_core import settings
 from ease_studyante_core.views import TokenViewWithUserId
@@ -50,15 +51,16 @@ router = DefaultRouter()
 urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls, name='admin'),
     path('api/', include('api.urls', namespace='api'),),
     path('o/login/', TokenViewWithUserId.as_view(), name='token'),
-    path("", chat_views.chatPage, name="chat-page"),
+    # path("", chat_views.chatPage, name="chat-page"),
     path('password-reset-complete/',
          auth_views.PasswordResetCompleteView.as_view(
              template_name='password_reset_complete.html'),
          name='password_reset_complete'),
-
+    path('', dashboard_view, name='dashboard'),
+    path('dashboard/', dashboard_detail_view, name='dash_detail')
 ]
 
 urlpatterns += router.urls
