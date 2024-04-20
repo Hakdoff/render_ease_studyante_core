@@ -1,4 +1,4 @@
-
+from datetime import datetime
 from rest_framework import serializers
 
 from class_information.serializers import SectionSerializers, SubjectSerializers
@@ -97,3 +97,61 @@ class StudentRegisterSerializers(serializers.ModelSerializer):
     class Meta:
         model = Registration
         fields = ['student',]
+
+
+class TimeOutSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Attendance
+        fields = ['pk', 'time_in', 'time_out',
+                  'is_present', 'attendance_date',]
+
+
+class TimeOutAttendanceSerializers(serializers.ModelSerializer):
+    student = StudentSerializer(read_only=True)
+    student_ids = serializers.ListField(write_only=True)
+
+    class Meta:
+        model = Registration
+        fields = ['student', 'student_ids',]
+
+        extra_kwargs = {
+            'student_ids': {'required': True, 'write_only': True},
+            'schedule_id': {'required': True, 'write_only': True}
+        }
+
+    def __init__(self, *args, **kwargs):
+        # init context and request
+        context = kwargs.get('context', {})
+        self.request = context.get('request', None)
+        super(TimeOutAttendanceSerializers, self).__init__(*args, **kwargs)
+
+    def to_representation(self, instance):
+        data = super(TimeOutAttendanceSerializers,
+                     self).to_representation(instance)
+        if self.request:
+            schedule_id = ''
+
+            if self.request.GET:
+                # get params from GET method
+                schedule_id = self.request.GET.get('schedule_id', None)
+
+            if self.request.POST:
+                # get params from POST method
+                schedule_id = self.request.query_params('schedule_id', None)
+
+            schedule = Schedule.objects.get(pk=schedule_id)
+
+            if "student" in data:
+                student = data['student']
+                current_date = datetime.now()
+                attendances = Attendance.objects.filter(
+                    student__pk=student['pk'], attendance_date=current_date, schedule=schedule,)
+
+                attendace = None
+
+                if attendances.exists():
+                    serializer = TimeOutSerializers(attendances.first())
+                    attendace = serializer.data
+                data['attendance'] = attendace
+        return data

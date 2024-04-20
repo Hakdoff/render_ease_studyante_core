@@ -8,8 +8,8 @@ from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from user_profile.models import Student, Teacher
-from .serializers import (StudentAssessmentSerializers,
-                          TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers, AssessmentSerializers)
+from .serializers import (StudentAssessmentSerializers, TeacherScheduleSerialzers, AttendanceSerializers,
+                          StudentRegisterSerializers, AssessmentSerializers, TimeOutAttendanceSerializers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment, Assessment
 from registration.models import Registration
 from rest_framework.response import Response
@@ -433,3 +433,59 @@ class StudentAssessmentUpdateOrCreateView(APIView):
         serializer = StudentAssessmentSerializers(
             student_assessments.first())
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TeacherAttendaceListCreateView(generics.ListCreateAPIView):
+    serializer_class = TimeOutAttendanceSerializers
+    queryset = Registration.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+
+        if academic_years.exists():
+            schedule_id = self.request.GET.get('schedule_id', None)
+            academic_year = academic_years.first()
+            schedule = get_object_or_404(Schedule, pk=schedule_id)
+
+            return self.queryset.filter(section=schedule.section, academic_year=academic_year)
+
+        return []
+
+    def get_serializer_context(self):
+        """
+        Add request to serializer context
+        """
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def post(self, request, *args, **kwargs):
+        student_ids = request.data.get('student_ids', None)
+        schedule_id = request.GET.get('schedule_id', None)
+        current_date = datetime.now()
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
+        is_created = True if student_ids else False
+
+        time_out_students = []
+
+        for student_id in student_ids:
+            attendances = Attendance.objects.filter(
+                student__pk=student_id, time_in__date=current_date, schedule=schedule)
+            if attendances.exists():
+                attendance = attendances.first()
+                if not attendance.time_out and attendance.is_present:
+                    attendance.time_out = current_date
+                    attendance.save()
+            else:
+                student = get_object_or_404(Student, pk=student_id)
+                Attendance.objects.create(
+                    student=student, schedule=schedule, is_present=False, time_in=None)
+            time_out_students.append(student_id)
+
+        serializer = TimeOutAttendanceSerializers(Registration.objects.filter(
+            student__pk__in=time_out_students), many=True, context={'request': request})
+
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED if is_created else status.HTTP_200_OK)
