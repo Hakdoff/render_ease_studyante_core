@@ -9,19 +9,20 @@ from user_profile.models import Teacher
 from registration.models import Registration
 from .models import Subject, Department, Section
 
+
 class ScheduleTabularInline(admin.TabularInline):
     verbose_name = "Schedule"
     verbose_name_plural = "Schedules"
     model = Schedule
     fields = ('section',)
     readonly_fields = ('section',)
-    
+
     def has_add_permission(self, request, obj=None):
         return False
-    
+
     def has_delete_permission(self, request, obj=None):
         return False
-    
+
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         academic_years = AcademicYear.objects.all()
         qs = super(ScheduleTabularInline, self).get_queryset(request)
@@ -30,7 +31,7 @@ class ScheduleTabularInline(admin.TabularInline):
             return qs.filter(academic_year=academic_year)
 
         return qs
-    
+
 
 @admin.register(Subject)
 class DepartmentAdminView(admin.ModelAdmin):
@@ -51,6 +52,7 @@ class DepartmentAdminView(admin.ModelAdmin):
             ]
         }),
     )
+
 
 class TeachersTabularInline(admin.TabularInline):
     verbose_name = "Teacher"
@@ -73,6 +75,7 @@ class TeachersTabularInline(admin.TabularInline):
 
         return qs
 
+
 @admin.register(Department)
 class DepartmentAdminView(admin.ModelAdmin):
     list_display = ['code', 'name']
@@ -87,6 +90,7 @@ class DepartmentAdminView(admin.ModelAdmin):
             ]
         }),
     )
+
 
 class RegistrationTabularInline(admin.TabularInline):
     verbose_name = "Student"

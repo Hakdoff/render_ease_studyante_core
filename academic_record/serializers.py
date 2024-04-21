@@ -2,6 +2,7 @@ from datetime import datetime
 from rest_framework import serializers
 
 from class_information.serializers import SectionSerializers, SubjectSerializers
+from user_profile.models import Parent
 from user_profile.serializers import StudentSerializer, TeacherSerializer
 from .models import AcademicYear, Schedule, Attendance, Assessment, StudentAssessment
 from registration.models import Registration
@@ -155,3 +156,11 @@ class TimeOutAttendanceSerializers(serializers.ModelSerializer):
                     attendace = serializer.data
                 data['attendance'] = attendace
         return data
+
+
+class ParentStudentListSerializers(serializers.ModelSerializer):
+    students = StudentSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Parent
+        fields = ['students',]

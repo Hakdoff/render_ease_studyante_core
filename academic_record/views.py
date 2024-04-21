@@ -100,7 +100,7 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 # rsc = RSCodec(10)
                 # student_id = rsc.decode( bytearray. )[0]
                 register_students = Registration.objects.filter(
-                    student__user__pk=student, academic_year=academic_years.first())
+                    student__pk=student, academic_year=academic_years.first())
 
             if register_students.exists():
                 teacher = self.request.user
@@ -108,20 +108,24 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 schedules = Schedule.objects.filter(
                     teacher__user__pk=teacher.pk, section__pk=register_student.section.pk)
                 current_date = datetime.now()
+                attendance = None
 
-                attendances = Attendance.objects.filter(
-                    student__pk=register_student.student.pk, time_in__date=current_date, schedule=schedule)
-
-                if schedules.exists() and not attendances.exists():
+                if schedules.exists():
                     schedule = schedules.first()
+                    attendances = Attendance.objects.filter(
+                        student__pk=register_student.student.pk, time_in__date=current_date, schedule=schedule)
 
-                    attendance = Attendance.objects.create(
-                        student=register_student.student, schedule=schedule, is_present=True)
+                    if not attendances.exists():
 
-                    serializer = AttendanceSerializers(attendance)
+                        attendance = Attendance.objects.create(
+                            student=register_student.student, schedule=schedule, is_present=True)
 
-                    return Response(serializer.data)
-                serializer = AttendanceSerializers(attendances.first())
+                        serializer = AttendanceSerializers(attendance)
+                        return Response(serializer.data)
+                    else:
+                        attendance = attendances.first()
+
+                serializer = AttendanceSerializers(attendance)
                 serializer_data = serializer.data
                 error = {
                     "error_message": "Student already time in",
