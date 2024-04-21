@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <style>
+          /*
+  1. Use a more-intuitive box-sizing model.
+*/
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        border: 0px solid red;
+      }
+      /*
+  2. Remove default margin
+*/
+      * {
+        margin: 0;
+      }
+      /*
+  Typographic tweaks!
+  3. Add accessible line-height
+  4. Improve text rendering
+*/
+      body {
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      /*
+  5. Improve media defaults
+*/
+      img,
+      picture,
+      video,
+      canvas,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      /*
+  6. Remove built-in form typography styles
+*/
+      input,
+      button,
+      textarea,
+      select {
+        font: inherit;
+      }
+      /*
+  7. Avoid text overflows
+*/
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        overflow-wrap: break-word;
+      }
+      /*
+  8. Create a root stacking context
+*/
+      #root,
+      #__next {
+        isolation: isolate;
+      }
+      /**************************************************************************/
+      /*                            Layout Styles                               */
+      /**************************************************************************/
+
+      .title {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        padding-left: 20px;
+        font-size: 1.5rem;
+        color: #fff;
+      }
+
+      .title-box {
+        display: flex;
+        margin: 20px;
+        background-color: #d64646;
+        border-radius: 10px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .admin-btn {
+        justify-content: flex-end;
+        border-radius: 10px;
+        background: rgba(0, 0, 80);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px;
+        text-decoration: none;
+        margin-left: auto; /* Added line to push button to the right end */
+      }
+
+      .flex-container-data {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: top;
+        min-height: 85dvh;
+      }
+
+      .list {
+        width: 70dvh;
+        margin-inline: 50px;
+        min-height: 70dvh;
+        margin: 10px;
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+      }
+
+      .list-heading,
+      .list-count,
+      .actual-list {
+        padding: 10px;
+        text-decoration: none;
+        list-style-type: none;
+      }
+
+      .list-heading,
+      .list-count,
+      .actual-list li {
+        background-color: #d64646;
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .actual-list {
+        overflow-y: scroll;
+        min-height: 70dvh;
+      }
+
+      .actual-list li {
+        padding: 10px;
+        margin: 10px;
+        border-radius: 8px;
+      }
+
+    </style>
+  </head>
+  <body>
+     <div class="title-box">
+      <p class="title">Analytics Dashboard</p>
+      <a href="{% url 'dashboard'%}" class="admin-btn">Return to Dashboard</a>
+    </div>
+
+    <!-- Display Attendance Data -->
+    <div class="flex-container-data">
+          <div class="list">
+      <h2 class="list-heading">Student List</h2>
+      <p class="list-count">Total Students: {{ all_students.count }}</p>
+      <ul class="actual-list">
+        {% for reg_student in all_students %}
+        <li>
+          {{reg_student.student.user.first_name}},
+          {{reg_student.student.user.last_name}}
+          - {{reg_student.section}}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="list">
+      <h2 class="list-heading">Teacher List</h2>
+      <p class="list-count">Total Teachers: {{ teachers_users.count }}</p>
+      <ul class="actual-list">
+        {% for teacher_schedule in teachers_users %}
+        <li>{{ teacher_schedule.teacher.user.first_name }} {{teacher_schedule.teacher.user.last_name}} {{teacher_schedule.section}} {{ teacher_schedule.subject }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    </div>
+
+    <!-- Other Dashboard Content -->
+    <!-- Add more content as needed -->
+  </body>
+</html>

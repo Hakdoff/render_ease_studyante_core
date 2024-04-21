@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_crontab',
 
-
+    'dashboard',
     'base',
     'user_profile',
     'class_information',

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../../media/admin-interface/logo/images.png"
+    />
+    <title>Dashboard</title>
+    <style>
+      /*
+  1. Use a more-intuitive box-sizing model.
+*/
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        border: 0px solid red;
+      }
+      /*
+  2. Remove default margin
+*/
+      * {
+        margin: 0;
+      }
+      /*
+  Typographic tweaks!
+  3. Add accessible line-height
+  4. Improve text rendering
+*/
+      body {
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      /*
+  5. Improve media defaults
+*/
+      img,
+      picture,
+      video,
+      canvas,
+      svg {
+        display: block;
+        max-width: 100%;
+      }
+      /*
+  6. Remove built-in form typography styles
+*/
+      input,
+      button,
+      textarea,
+      select {
+        font: inherit;
+      }
+      /*
+  7. Avoid text overflows
+*/
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        overflow-wrap: break-word;
+      }
+      /*
+  8. Create a root stacking context
+*/
+      #root,
+      #__next {
+        isolation: isolate;
+      }
+      /**************************************************************************/
+      /*                            Layout Styles                               */
+      /**************************************************************************/
+
+      .title {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        padding-left: 20px;
+        font-size: 1.5rem;
+        color: #fff;
+      }
+
+      .title-box {
+        display: flex;
+        margin: 20px;
+        background-color: #d64646;
+        border-radius: 10px;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .admin-btn {
+        justify-content: flex-end;
+        border-radius: 10px;
+        background: rgba(0, 0, 80);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: white;
+        padding: 10px 20px;
+        margin: 10px;
+        text-decoration: none;
+        margin-left: auto; /* Added line to push button to the right end */
+      }
+
+      .flex-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        margin-inline: auto;
+      }
+
+      .user-div {
+        width: 40%;
+        margin-inline: 20px;
+        padding: 10px;
+        background-color: #d64646;
+        color: #fff;
+        border-radius: 8px;
+        font-weight: lighter;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .chart-master-containers {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        height: calc(100dvh - 25dvh);
+      }
+
+      .chart-container {
+        width: 30dvw;
+        margin-inline: auto;
+        padding: 20px;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        margin-top: 20px;
+        border-radius: 8px;
+      }
+
+      .heading {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.8rem;
+      }
+
+      .detail-link {
+        color: white;
+      }
+
+      .title-attendance,
+      .lists {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 1.2rem;
+        color: black;
+        text-decoration: none;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .title-attendance {
+        color: #fff;
+        background-color: #d64646;
+        border-radius: 10px;
+        padding: 10px;
+      }
+
+      .lists {
+        overflow-y: scroll;
+        height: 50dvh;
+        margin-top: 20px;
+      }
+
+      .accordion {
+        background-color: #d64646;
+        color: #fff;
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+        transition: 0.4s;
+        margin-bottom: 10px;
+        border-radius: 8px;
+      }
+
+      .active .accordion:hover {
+        background-color: #ccc;
+      }
+
+      .panel {
+        background-color: white;
+        overflow: hidden;
+        margin-bottom: 10px;
+        max-height: 0;
+        transition: max-height 0.2s ease-out;
+      }
+
+      .margin-top {
+        margin-top: 5dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title-box">
+      <p class="title">Analytics Dashboard</p>
+      <a href="{% url 'admin:index'%}" class="admin-btn">Go To Admin</a>
+    </div>
+
+    <div class="flex-container">
+      <!-- Display Attendance Data -->
+      <div class="user-div">
+        <a class="detail-link" href="{% url 'dash_detail' %}"
+          ><p class="heading">Students: {{ students_users.count }}</p></a
+        >
+      </div>
+
+      <div class="user-div">
+        <a class="detail-link" href="{% url 'dash_detail' %}"
+          ><p class="heading">Teachers: {{ teachers_users.count }}</p></a
+        >
+      </div>
+
+      <div class="user-div">
+        <p class="heading">Total Users in System: {{ user_count.count }}</p>
+      </div>
+    </div>
+
+    <div class="chart-master-containers">
+      <div class="chart-container">
+        <canvas id="myChart"></canvas>
+        <script>
+          var ctx = document.getElementById("myChart");
+          var data = {
+            labels: [{% for gender in student_genders %} '{{ gender }}', {% endfor %}],
+            datasets: [
+              {
+                label: "Gender",
+                data: [{% for number in gender_num %} '{{ number.count }}', {% endfor %} ],
+                backgroundColor: [
+                  "rgba(54, 162, 235, 0.2)",
+                  "rgba(255, 99, 132, 0.2)",
+                  "rgba(255, 206, 86, 0.2)",
+                  "rgba(75, 192, 192, 0.2)",
+                  "rgba(153, 102, 255, 0.2)",
+                  "rgba(255, 159, 64, 0.2)",
+                ],
+                borderColor: [
+                  "rgba(54, 162, 235, 1)",
+                  "rgba(255, 99, 132, 1)",
+                  "rgba(255, 206, 86, 1)",
+                  "rgba(75, 192, 192, 1)",
+                  "rgba(153, 102, 255, 1)",
+                  "rgba(255, 159, 64, 1)",
+                ],
+                borderWidth: 1,
+              },
+            ],
+          };
+          var options = {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+              title: {
+                display: true,
+                text: "No. of Male and Female Students",
+              },
+            },
+          };
+          var chart = new Chart(ctx, {
+            type: "pie",
+            data: data,
+            options: options,
+          });
+        </script>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="myOtherChart"></canvas>
+        <script>
+          var ctx = document.getElementById("myOtherChart");
+          var data = {
+            labels: [{% for yr_lvl in student_year_levels %} '{{ yr_lvl }}', {% endfor %}],
+            datasets: [
+              {
+                label: "Number of Students in Each Grade Level",
+                data: [{% for year_level, count in year_levels_counts.items %} '{{ count }}', {% endfor %}],
+                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+              },
+            ],
+          };
+          var options = {
+            plugins: {
+              legend: {
+                labels: {
+                  boxWidth: 0,
+                }
+              },
+              title: {
+               display: true,
+               text: 'Students in Each Grade Level'
+              }
+            },
+            responsive: true,
+            title: {
+              display: true,
+              position: "left",
+              text: "Subject Wise Marks",
+            },
+          };
+          // Create the chart
+          var barChart = new Chart(ctx, {
+            type: "bar",
+            data: data,
+            options: options,
+          });
+        </script>
+        <div class="margin-top">
+          <canvas id="myLineChart"></canvas>
+          <script>
+            var ctx = document.getElementById('myLineChart');
+            var months = JSON.parse('{{ months|safe }}');
+            var counts = JSON.parse('{{ counts|safe }}');
+            let lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: months,
+              datasets: [{
+                label: 'Accounts Created Each Month',
+                data: counts,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+              }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'User Accounts Growth Per Month'
+                    }
+                }
+            }
+          })
+          </script>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <p class="title-attendance">Attendance</p>
+        <ul class="lists">
+          {% for student_data in students_with_attendance %}
+          <li>
+            <button class="accordion">
+              {{ student_data.student.user.first_name }} {{ student_data.student.user.last_name }}
+            </button>
+            <div class="panel">
+              - Latest Attendance: {{ student_data.latest_attendance_date }}
+              <br />
+              - Time In: {{ student_data.student_time_in }} <br />
+              - Time Out: {{ student_data.student_time_out }} <br />
+              - Status: {% if student_data.is_present %}Present{% else %}Absent{% endif %}
+            </div>
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                const accordions = document.querySelectorAll(".accordion");
+
+                accordions.forEach((accordion) => {
+                  accordion.addEventListener("click", function () {
+                    const isActive = this.classList.contains("active");
+                    closeAllAccordions();
+
+                    if (!isActive) {
+                      this.classList.add("active");
+                      const panel = this.nextElementSibling;
+                      panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                  });
+                });
+
+                function closeAllAccordions() {
+                  accordions.forEach((accordion) => {
+                    accordion.classList.remove("active");
+                    const panel = accordion.nextElementSibling;
+                    panel.style.maxHeight = null;
+                  });
+                }
+              });
+            </script>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    <!-- Other Dashboard Content -->
+    <!-- Add more content as needed -->
+  </body>
+</html>
