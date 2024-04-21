@@ -114,13 +114,34 @@ class RegistrationTabularInline(admin.TabularInline):
 
         return qs
 
+class SubjectTabularInline(admin.TabularInline):
+    verbose_name = "Subject"
+    verbose_name_plural = "Subjects"
+    model = Schedule
+    fields = ('subject', 'academic_year',)
+    readonly_fields = ('subject', 'academic_year',)
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        academic_years = AcademicYear.objects.all()
+        qs = super(SubjectTabularInline, self).get_queryset(request)
+        if academic_years.exists():
+            academic_year = academic_years.first()
+            return qs.filter(academic_year=academic_year)
+
+        return qs
+    
 @admin.register(Section)
 class SectionAdminView(admin.ModelAdmin):
     list_display = ['name', 'year_level']
     search_fields = ['name', 'year_level']
     list_filter = ('name', 'year_level')
-    inlines = [RegistrationTabularInline,]
+    inlines = [RegistrationTabularInline, SubjectTabularInline,]
     edit_fields = (
         ('Section Information', {
             'fields': [
