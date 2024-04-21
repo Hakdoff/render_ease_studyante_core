@@ -4,8 +4,8 @@ from academic_record.models import AcademicYear
 from base.models import User
 from user_profile.email import Util
 
-from .serializers import ChangePasswordSerializer, ResetPasswordEmailRequestSerializer, StudentSerializer, TeacherSerializer
-from .models import Teacher, Student
+from .serializers import ChangePasswordSerializer, ParentSerializer, ResetPasswordEmailRequestSerializer, StudentOnlySerializer, StudentSerializer, TeacherSerializer
+from .models import Parent, Teacher, Student
 from registration.models import Registration
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.urls import reverse
@@ -13,12 +13,6 @@ from django.template.loader import get_template
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import smart_bytes
 from django.contrib.sites.shortcuts import get_current_site
-from datetime import (
-    datetime,
-    timedelta
-)
-from django.utils.crypto import get_random_string
-from django.conf import settings
 import re
 
 
@@ -95,11 +89,11 @@ class TeacherProfileView(generics.RetrieveAPIView):
 
 class ParentProfileView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = StudentSerializer
+    serializer_class = ParentSerializer
 
     def get(self, request, *args, **kwargs):
         user = self.request.user
-        user_profiles = Teacher.objects.filter(user=user)
+        user_profiles = Parent.objects.filter(user=user)
 
         if user_profiles.exists():
             user_profile = user_profiles.first()
@@ -111,11 +105,13 @@ class ParentProfileView(generics.RetrieveAPIView):
                 "firstName": user.first_name,
                 "lastName": user.last_name,
                 "email": user.email,
-                "department": user_profile.department.name,
                 "profilePhoto": request.build_absolute_uri(user_profile.profile_photo.url) if user_profile.profile_photo else None,
                 "is_new_user": user_profile.user.is_new_user,
-
             }
+
+            students_serializer = StudentOnlySerializer(
+                user_profile.students, many=True)
+            data["students"] = students_serializer.data
 
             return response.Response(data, status=status.HTTP_200_OK)
 

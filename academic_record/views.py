@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions,  status, viewsets, response
+from rest_framework import generics, permissions,  status, viewsets, response, filters
 
 from academic_record.custom_filter_assessment import CustomFilterAssessment, CustomFilterStudentAssessment
 from academic_record.gpa_caluclate import gpa_calculate
@@ -8,8 +8,8 @@ from academic_record.uuid_checker import is_valid_uuid
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from user_profile.models import Student, Teacher
-from .serializers import (StudentAssessmentSerializers,
-                          TeacherScheduleSerialzers, AttendanceSerializers, StudentRegisterSerializers, AssessmentSerializers)
+from .serializers import (StudentAssessmentSerializers, TeacherScheduleSerialzers, AttendanceSerializers,
+                          StudentRegisterSerializers, AssessmentSerializers, TimeOutAttendanceSerializers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment, Assessment
 from registration.models import Registration
 from rest_framework.response import Response
@@ -100,7 +100,7 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 # rsc = RSCodec(10)
                 # student_id = rsc.decode( bytearray. )[0]
                 register_students = Registration.objects.filter(
-                    student__user__pk=student, academic_year=academic_years.first())
+                    student__pk=student, academic_year=academic_years.first())
 
             if register_students.exists():
                 teacher = self.request.user
@@ -108,20 +108,24 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 schedules = Schedule.objects.filter(
                     teacher__user__pk=teacher.pk, section__pk=register_student.section.pk)
                 current_date = datetime.now()
+                attendance = None
 
-                attendances = Attendance.objects.filter(
-                    student__pk=register_student.student.pk, time_in__date=current_date)
-
-                if schedules.exists() and not attendances.exists():
+                if schedules.exists():
                     schedule = schedules.first()
+                    attendances = Attendance.objects.filter(
+                        student__pk=register_student.student.pk, time_in__date=current_date, schedule=schedule)
 
-                    attendance = Attendance.objects.create(
-                        student=register_student.student, schedule=schedule, is_present=True)
+                    if not attendances.exists():
 
-                    serializer = AttendanceSerializers(attendance)
+                        attendance = Attendance.objects.create(
+                            student=register_student.student, schedule=schedule, is_present=True)
 
-                    return Response(serializer.data)
-                serializer = AttendanceSerializers(attendances.first())
+                        serializer = AttendanceSerializers(attendance)
+                        return Response(serializer.data)
+                    else:
+                        attendance = attendances.first()
+
+                serializer = AttendanceSerializers(attendance)
                 serializer_data = serializer.data
                 error = {
                     "error_message": "Student already time in",
@@ -359,7 +363,8 @@ class TeacherAssessmentListView(generics.ListAPIView):
     queryset = Assessment.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = ExtraSmallResultsSetPagination
-    filter_backends = [CustomFilterAssessment]
+    filter_backends = [CustomFilterAssessment, filters.OrderingFilter]
+    ordering_fileds = ['name',]
 
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()
@@ -432,3 +437,59 @@ class StudentAssessmentUpdateOrCreateView(APIView):
         serializer = StudentAssessmentSerializers(
             student_assessments.first())
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TeacherAttendaceListCreateView(generics.ListCreateAPIView):
+    serializer_class = TimeOutAttendanceSerializers
+    queryset = Registration.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ExtraSmallResultsSetPagination
+
+    def get_queryset(self):
+        academic_years = AcademicYear.objects.all()
+
+        if academic_years.exists():
+            schedule_id = self.request.GET.get('schedule_id', None)
+            academic_year = academic_years.first()
+            schedule = get_object_or_404(Schedule, pk=schedule_id)
+
+            return self.queryset.filter(section=schedule.section, academic_year=academic_year)
+
+        return []
+
+    def get_serializer_context(self):
+        """
+        Add request to serializer context
+        """
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def post(self, request, *args, **kwargs):
+        student_ids = request.data.get('student_ids', None)
+        schedule_id = request.GET.get('schedule_id', None)
+        current_date = datetime.now()
+        schedule = get_object_or_404(Schedule, pk=schedule_id)
+        is_created = True if student_ids else False
+
+        time_out_students = []
+
+        for student_id in student_ids:
+            attendances = Attendance.objects.filter(
+                student__pk=student_id, time_in__date=current_date, schedule=schedule)
+            if attendances.exists():
+                attendance = attendances.first()
+                if not attendance.time_out and attendance.is_present:
+                    attendance.time_out = current_date
+                    attendance.save()
+            else:
+                student = get_object_or_404(Student, pk=student_id)
+                Attendance.objects.create(
+                    student=student, schedule=schedule, is_present=False, time_in=None)
+            time_out_students.append(student_id)
+
+        serializer = TimeOutAttendanceSerializers(Registration.objects.filter(
+            student__pk__in=time_out_students), many=True, context={'request': request})
+
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED if is_created else status.HTTP_200_OK)

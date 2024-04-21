@@ -23,14 +23,23 @@ class StudentScheduleListView(generics.ListAPIView):
 
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()
+        student_id = self.request.GET.get('student_id', None)
 
         if academic_years.exists():
             user = self.request.user
             current_academic = academic_years.first()
-            register_users = Registration.objects.filter(
-                academic_year=current_academic, student__user__pk=user.pk)
 
-            if register_users.exists():
+            register_users = None
+
+            if student_id:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__pk=student_id)
+
+            else:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__user__pk=user.pk)
+
+            if register_users and register_users.exists():
                 # check the user wether is register to current academic or not
                 register_user = register_users.first()
                 return Schedule.objects.filter(academic_year=current_academic, section__pk=register_user.section.pk).order_by('time_start')
@@ -47,12 +56,20 @@ class StudentAttendanceListView(generics.ListAPIView):
     def get_queryset(self):
         academic_years = AcademicYear.objects.all()
         subject_id = self.request.GET.get('subject_id', None)
+        student_id = self.request.GET.get('student_id', None)
 
         if academic_years.exists() and subject_id:
             user = self.request.user
             current_academic = academic_years.first()
-            register_users = Registration.objects.filter(
-                academic_year=current_academic, student__user__pk=user.pk)
+            register_users = None
+
+            if student_id:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__pk=student_id)
+
+            else:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__user__pk=user.pk)
 
             if register_users.exists():
                 # check the user wether is register to current academic or not
@@ -78,13 +95,21 @@ class StudentAssessmentListView(generics.ListAPIView):
         academic_years = AcademicYear.objects.all()
         grading_period = self.request.GET.get('grading_period', None)
         subject_id = self.request.GET.get('subject_id', None)
+        student_id = self.request.GET.get('student_id', None)
 
         if academic_years.exists() and grading_period and subject_id:
             subject = get_object_or_404(Subject, pk=subject_id)
             user = self.request.user
             current_academic = academic_years.first()
-            register_users = Registration.objects.filter(
-                academic_year=current_academic, student__user__pk=user.pk)
+            register_users = None
+
+            if student_id:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__pk=student_id)
+
+            else:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__user__pk=user.pk)
 
             if register_users.exists():
                 # check the user wether is register to current academic or not
@@ -145,18 +170,34 @@ class StudentOverAllGPAView(APIView):
                 type=openapi.TYPE_STRING,
                 required=True
             ),
+            openapi.Parameter(
+                'student_id',
+                openapi.IN_QUERY,
+                description='Pass student id to get speific student this params for parent',
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
         ]
     )
     def get(self, request, *args, **kwargs):
         user = self.request.user
         academic_years = AcademicYear.objects.all()
         subject_id = request.query_params.get('subject_id', None)
+        student_id = self.request.GET.get('student_id', None)
 
         if academic_years.exists():
             user = self.request.user
             current_academic = academic_years.first()
-            register_users = Registration.objects.filter(
-                academic_year=current_academic, student__user__pk=user.pk)
+
+            register_users = None
+
+            if student_id:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__pk=student_id)
+
+            else:
+                register_users = Registration.objects.filter(
+                    academic_year=current_academic, student__user__pk=user.pk)
 
             if register_users.exists():
                 register_user = register_users.first()

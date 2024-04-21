@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Any
 from django import forms
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib import admin
@@ -6,9 +7,12 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group, Permission
 from django.db.models import Q
 
+from django.db.models.query import QuerySet
+from django.http import HttpRequest
 import qrcode
 
 from base.admin import BaseAdmin, BaseStackedInline, User
+from academic_record.models import AcademicYear, Schedule
 from .models import Student, Teacher, Parent
 from class_information.models import Department
 from reedsolo import RSCodec, ReedSolomonError
@@ -270,8 +274,8 @@ class ParentCreationForm(forms.ModelForm):
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('user', 'year_level')
-    search_fields = ['user__email', 'user__firstname', 'user__lastname']
-    list_filter = ['user',]
+    search_fields = ['user__first_name', 'user__last_name']
+    list_filter = ['user__student', 'year_level',]
     form = StudentCreationForm
     formfield_querysets = {
         'user': lambda: User.objects.all(),
@@ -303,12 +307,34 @@ class StudentAdmin(admin.ModelAdmin):
                 form.base_fields['email'].initial = obj.user.email
         return form
 
+class ScheduleTabularInline(admin.TabularInline):
+    verbose_name = "Schedule"
+    verbose_name_plural = "Schedules"
+    model = Schedule
+    fields = ('subject', 'section', 'day', 'time_start', 'time_end',)
+    readonly_fields = ('subject', 'section', 'day', 'time_start', 'time_end',)
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
+    
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        academic_years = AcademicYear.objects.all()
+        qs = super(ScheduleTabularInline, self).get_queryset(request)
+        if academic_years.exists():
+            academic_year = academic_years.first()
+            return qs.filter(academic_year=academic_year)
 
+        return qs
+    
 @admin.register(Teacher)
 class TeacherAdmin(BaseAdmin):
     list_fields = ('user', 'department',)
-    list_filter = ['user', 'department']
+    list_filter = ['user__teacher', 'department']
     form = TeacherCreationForm
+    inlines = [ScheduleTabularInline,]
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'department': lambda: Department.objects.all(),
@@ -352,8 +378,8 @@ class TeacherAdmin(BaseAdmin):
 class ParentAdmin(BaseAdmin):
     form = ParentCreationForm
     list_fields = ('user', 'address', 'contact_number',
-                   'age', 'gender', 'profile_photo')
-    list_filter =  ['user',]
+                   'age', 'gender', )
+    list_filter =  ['user__parent',]
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'students': lambda: Student.objects.all()

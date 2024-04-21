@@ -6,7 +6,8 @@ from user_profile.views import ChangePasswordView, RequestPasswordResetEmail, St
 from academic_record.views import (
     TeacherScheduleListView, AttendanceTeacherViewSet, TeacherStudentAssessmentListView,
     AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView,
-    TeacherAssessmentListView, TeacherAssessmentStudentListView, StudentAssessmentUpdateOrCreateView)
+    TeacherAssessmentListView, TeacherAssessmentStudentListView, StudentAssessmentUpdateOrCreateView,
+    TeacherAttendaceListCreateView)
 from academic_record.student_views import (
     StudentScheduleListView, StudentAttendanceListView, StudentAttendanceRetrieveView, StudentAssessmentListView, StudentOverAllGPAView,
     StudentChatTeacherListView)
@@ -67,6 +68,9 @@ urlpatterns += [
 
     path('teacher/web/assessments', TeacherAssessmentListView.as_view(),
          name='teacher-web-assessments'),
+    path('teacher/attendance/timeout', TeacherAttendaceListCreateView.as_view(),
+         name='teacher-attendance-timeout'),
+
 
 
     path('teacher/students/attendance', AttendanceTeacherListView.as_view(),
