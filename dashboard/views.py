@@ -4,6 +4,9 @@ from academic_record.models import AcademicYear, Attendance, Schedule
 from base.models import User
 from user_profile.models import Student
 from registration.models import Registration
+
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth
 import json
 
 def dashboard_view(request):
@@ -19,7 +22,7 @@ def dashboard_view(request):
         'GRADE 10': Student.objects.filter(year_level='GRADE 10').count()
     }
 
-    # For Students
+    # For Students to retrieve Latest Attendance 
     students_data = Student.objects.all()
     students_with_attendance = []
 
@@ -45,6 +48,23 @@ def dashboard_view(request):
     # Student Grade Levels
     student_year_levels = ['GRADE 7', 'GRADE 8', 'GRADE 9', 'GRADE 10']
     
+    # Determine no. of Accounts
+    month_lists = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+
+    user_counts = User.objects.annotate(month=ExtractMonth('created_at')).values('month').annotate(count=Count('id')).order_by('month')
+
+    months = []
+    counts = []
+
+    month_counts = {month: 0 for month in month_lists}
+
+    for user_count in user_counts:
+        month_name = month_lists[user_count['month'] - 1]
+        month_counts[month_name] = user_count['count']
+
+    months = list(month_counts.keys())
+    counts = list(month_counts.values())
+
     context = {
         'students_users': students_users,
         'teachers_users': teachers_users,
@@ -55,8 +75,10 @@ def dashboard_view(request):
         'student_year_levels': student_year_levels,
         'year_levels_counts': year_levels_counts,
         'user_count': user_count,
-        'students_with_attendance': students_with_attendance
-        # Other context data for your dashboard
+        'students_with_attendance': students_with_attendance,
+        'month_lists': month_lists,
+        'months': json.dumps(months),
+        'counts': json.dumps(counts),
     }
 
 

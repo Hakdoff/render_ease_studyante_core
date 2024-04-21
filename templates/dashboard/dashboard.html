@@ -201,6 +201,10 @@
         max-height: 0;
         transition: max-height 0.2s ease-out;
       }
+
+      .margin-top {
+        margin-top: 5dvh;
+      }
     </style>
   </head>
   <body>
@@ -300,6 +304,10 @@
                 labels: {
                   boxWidth: 0,
                 }
+              },
+              title: {
+               display: true,
+               text: 'Students in Each Grade Level'
               }
             },
             responsive: true,
@@ -316,6 +324,39 @@
             options: options,
           });
         </script>
+        <div class="margin-top">
+          <canvas id="myLineChart"></canvas>
+          <script>
+            var ctx = document.getElementById('myLineChart');
+            var months = JSON.parse('{{ months|safe }}');
+            var counts = JSON.parse('{{ counts|safe }}');
+            let lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: months,
+              datasets: [{
+                label: 'Accounts Created Each Month',
+                data: counts,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+              }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'User Accounts Growth Per Month'
+                    }
+                }
+            }
+          })
+          </script>
+        </div>
       </div>
 
       <div class="chart-container">
@@ -324,8 +365,7 @@
           {% for student_data in students_with_attendance %}
           <li>
             <button class="accordion">
-              {{ student_data.student.user.first_name }} 
-              {{ student_data.student.user.last_name }}
+              {{ student_data.student.user.first_name }} {{ student_data.student.user.last_name }}
             </button>
             <div class="panel">
               - Latest Attendance: {{ student_data.latest_attendance_date }}
@@ -334,43 +374,34 @@
               - Time Out: {{ student_data.student_time_out }} <br />
               - Status: {% if student_data.is_present %}Present{% else %}Absent{% endif %}
             </div>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const accordions = document.querySelectorAll(".accordion");
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                const accordions = document.querySelectorAll(".accordion");
 
-    accordions.forEach(accordion => {
-      accordion.addEventListener("click", function() {
-        const isActive = this.classList.contains("active");
-        closeAllAccordions();
-        
-        if (!isActive) {
-          this.classList.add("active");
-          const panel = this.nextElementSibling;
-          panel.style.maxHeight = panel.scrollHeight + "px";
-        }
-      });
-    });
+                accordions.forEach((accordion) => {
+                  accordion.addEventListener("click", function () {
+                    const isActive = this.classList.contains("active");
+                    closeAllAccordions();
 
-    function closeAllAccordions() {
-      accordions.forEach(accordion => {
-        accordion.classList.remove("active");
-        const panel = accordion.nextElementSibling;
-        panel.style.maxHeight = null;
-      });
-    }
-  });
-</script>
+                    if (!isActive) {
+                      this.classList.add("active");
+                      const panel = this.nextElementSibling;
+                      panel.style.maxHeight = panel.scrollHeight + "px";
+                    }
+                  });
+                });
+
+                function closeAllAccordions() {
+                  accordions.forEach((accordion) => {
+                    accordion.classList.remove("active");
+                    const panel = accordion.nextElementSibling;
+                    panel.style.maxHeight = null;
+                  });
+                }
+              });
+            </script>
           </li>
-          {% comment %}
-          <li>
-            {{ student_data.student.user.first_name }} {{
-            student_data.student.user.last_name }} - Latest Attendance: {{
-            student_data.latest_attendance_date }} - Time In: {{
-            student_data.student_time_in }} - Time Out: {{
-            student_data.student_time_out }} | {% if student_data.is_present
-            %}Present{% else %}Absent{% endif %}
-          </li>
-          {% endcomment %} {% endfor %}
+          {% endfor %}
         </ul>
       </div>
     </div>
