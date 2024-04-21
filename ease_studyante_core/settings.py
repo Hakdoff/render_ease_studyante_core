@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'drf_yasg',
     'corsheaders',
-    'django_crontab',
 
     'dashboard',
     'base',
@@ -116,27 +115,22 @@ TEMPLATES = [
     },
 ]
 
-CRONJOBS = [
-    ('59 23 * * *', 'academic_record.tasks.perform_end_of_day_tasks'),
-    # This will run the function 'perform_end_of_day_tasks' at 11:59 PM every day
-]
-
 WSGI_APPLICATION = 'ease_studyante_core.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
-# }
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # REST CONFIG
 OAUTH2_PROVIDER = {
