@@ -11,7 +11,8 @@ import json
 
 def dashboard_view(request):
     academic_years = AcademicYear.objects.all()
-    students_users = Registration.objects.filter(academic_year=academic_years.first())
+    students_users = Student.objects.all()
+    # students_users = Registration.objects.filter(academic_year=academic_years.first())
     teachers_users = Schedule.objects.all()
     male_students = Student.objects.filter(gender='M')
     female_students = Student.objects.filter(gender='F')

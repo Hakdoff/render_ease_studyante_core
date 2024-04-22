@@ -361,48 +361,53 @@
 
       <div class="chart-container">
         <p class="title-attendance">Attendance</p>
-        <ul class="lists">
-          {% for student_data in students_with_attendance %}
-          <li>
-            <button class="accordion">
-              {{ student_data.student.user.first_name }} {{ student_data.student.user.last_name }}
-            </button>
-            <div class="panel">
-              - Latest Attendance: {{ student_data.latest_attendance_date }}
-              <br />
-              - Time In: {{ student_data.student_time_in }} <br />
-              - Time Out: {{ student_data.student_time_out }} <br />
-              - Status: {% if student_data.is_present %}Present{% else %}Absent{% endif %}
-            </div>
-            <script>
-              document.addEventListener("DOMContentLoaded", function () {
-                const accordions = document.querySelectorAll(".accordion");
+<ul class="lists">
+  {% for student_data in students_with_attendance %}
+  <li>
+    <button class="accordion">
+      {{ student_data.student.user.first_name }} {{ student_data.student.user.last_name }}
+    </button>
+    <div class="panel">
+      - Latest Attendance: {{ student_data.latest_attendance_date }}
+      <br />
+      - Time In: {{ student_data.student_time_in }} <br />
+      - Time Out: {{ student_data.student_time_out }} <br />
+      - Status: {% if student_data.is_present %}Present{% else %}Absent{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
 
-                accordions.forEach((accordion) => {
-                  accordion.addEventListener("click", function () {
-                    const isActive = this.classList.contains("active");
-                    closeAllAccordions();
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const accordions = document.querySelectorAll(".accordion");
 
-                    if (!isActive) {
-                      this.classList.add("active");
-                      const panel = this.nextElementSibling;
-                      panel.style.maxHeight = panel.scrollHeight + "px";
-                    }
-                  });
-                });
+    accordions.forEach((accordion) => {
+      accordion.addEventListener("click", function () {
+        const isActive = this.classList.contains("active");
 
-                function closeAllAccordions() {
-                  accordions.forEach((accordion) => {
-                    accordion.classList.remove("active");
-                    const panel = accordion.nextElementSibling;
-                    panel.style.maxHeight = null;
-                  });
-                }
-              });
-            </script>
-          </li>
-          {% endfor %}
-        </ul>
+        // Close all accordions first
+        closeAllAccordions();
+
+        // Toggle active class and panel display
+        if (!isActive) {
+          this.classList.add("active");
+          const panel = this.nextElementSibling;
+          panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+      });
+    });
+
+    function closeAllAccordions() {
+      const accordions = document.querySelectorAll(".accordion");
+      accordions.forEach((accordion) => {
+        accordion.classList.remove("active");
+        const panel = accordion.nextElementSibling;
+        panel.style.maxHeight = null;
+      });
+    }
+  });
+</script>
       </div>
     </div>
     <!-- Other Dashboard Content -->
