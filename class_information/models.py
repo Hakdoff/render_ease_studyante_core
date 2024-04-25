@@ -10,6 +10,25 @@ YEAR_LEVEL_CHOICES = [
     ('GRADE 12', 'GRADE 12'),
 ]
 
+GRADING_PERIOD_CHOICES = (
+    ('FIRST_GRADING', 'First Grading'),
+    ('SECOND_GRADING', 'Second Grading'),
+    ('THIRD_GRADING', 'Third Grading'),
+    ('FOURTH_GRADING', 'Fourth Grading'),
+)
+
+
+class GradeEncode(BaseModelWithUUID):
+    grading_period = models.CharField(
+        max_length=255, choices=GRADING_PERIOD_CHOICES, default="FIRST_GRADING")
+    is_enable = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ["grading_period", "is_enable"]
+
+    def __str__(self) -> str:
+        return f'{self.grading_period} - {self.is_enable}'
+
 
 class Department(models.Model):
     name = models.CharField(max_length=250)

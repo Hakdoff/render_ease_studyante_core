@@ -11,8 +11,10 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest
 import qrcode
 
+from aes.aes_implementation import encrypt
 from base.admin import BaseAdmin, BaseStackedInline, User
 from academic_record.models import AcademicYear, Schedule
+from ease_studyante_core import settings
 from .models import Student, Teacher, Parent
 from class_information.models import Department
 from reedsolo import RSCodec, ReedSolomonError
@@ -71,7 +73,6 @@ class StudentCreationForm(forms.ModelForm):
         email = self.cleaned_data['email']
         last_name = self.cleaned_data['last_name']
         contact_number = self.cleaned_data.get('contact_number', '')
-        
 
         # Check if instance exists and has an id (indicating it's an existing object)
         if instance.pk and instance.user_id:
@@ -107,6 +108,10 @@ class StudentCreationForm(forms.ModelForm):
             # encoded_value = rsc.encode(bytearray(encoded))
 
             # You can pass any data you want to encode in the QR code
+            # encrypted = encrypt(user.pk, settings.AES_SECRET_KEY)
+            # aes_256 = f'{encrypted["cipher_text"]}${encrypted["salt"]}${encrypted["nonce"]}${encrypted["tag"]}'
+
+            # pass the ase_256 F'String
             qr.add_data(user.pk)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
@@ -128,7 +133,8 @@ class StudentCreationForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
-    
+
+
 class TeacherCreationForm(forms.ModelForm):
     # Add fields for creating a new user
     email = forms.CharField(label='Email', widget=forms.EmailInput)
@@ -202,7 +208,6 @@ class TeacherCreationForm(forms.ModelForm):
         return instance
 
 
-
 class ParentCreationForm(forms.ModelForm):
     email = forms.CharField(label='Email', widget=forms.EmailInput)
     first_name = forms.CharField(label='First Name', widget=forms.TextInput)
@@ -238,7 +243,7 @@ class ParentCreationForm(forms.ModelForm):
                                'contact number already exists')
 
         return cleaned_data
-    
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         email = self.cleaned_data['email']
@@ -307,19 +312,20 @@ class StudentAdmin(admin.ModelAdmin):
                 form.base_fields['email'].initial = obj.user.email
         return form
 
+
 class ScheduleTabularInline(admin.TabularInline):
     verbose_name = "Schedule"
     verbose_name_plural = "Schedules"
     model = Schedule
     fields = ('subject', 'section', 'day', 'time_start', 'time_end',)
     readonly_fields = ('subject', 'section', 'day', 'time_start', 'time_end',)
-    
+
     def has_add_permission(self, request, obj=None):
         return False
-    
+
     def has_delete_permission(self, request, obj=None):
         return False
-    
+
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         academic_years = AcademicYear.objects.all()
         qs = super(ScheduleTabularInline, self).get_queryset(request)
@@ -328,7 +334,8 @@ class ScheduleTabularInline(admin.TabularInline):
             return qs.filter(academic_year=academic_year)
 
         return qs
-    
+
+
 @admin.register(Teacher)
 class TeacherAdmin(BaseAdmin):
     list_fields = ('user', 'department',)
@@ -364,6 +371,7 @@ class TeacherAdmin(BaseAdmin):
         ),
     )
     search_fields = ['user__first_name', 'user__last_name']
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(TeacherAdmin, self).get_form(request, obj, **kwargs)
         if obj is not None:
@@ -379,7 +387,7 @@ class ParentAdmin(BaseAdmin):
     form = ParentCreationForm
     list_fields = ('user', 'address', 'contact_number',
                    'age', 'gender', )
-    list_filter =  ['user__parent',]
+    list_filter = ['user__parent',]
     formfield_querysets = {
         'user': lambda: User.objects.all(),
         'students': lambda: Student.objects.all()

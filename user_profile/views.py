@@ -2,6 +2,7 @@ from rest_framework import generics, permissions, response, status
 
 from academic_record.models import AcademicYear
 from base.models import User
+from class_information.models import GradeEncode
 from user_profile.email import Util
 
 from .serializers import ChangePasswordSerializer, ParentSerializer, ResetPasswordEmailRequestSerializer, StudentOnlySerializer, StudentSerializer, TeacherSerializer
@@ -66,6 +67,36 @@ class TeacherProfileView(generics.RetrieveAPIView):
 
         if user_profiles.exists():
             user_profile = user_profiles.first()
+            academic_years = AcademicYear.objects.all()
+            grade_encodes = GradeEncode.objects.all()
+
+            grading_periods = []
+
+            if academic_years.exists() and grade_encodes.exists():
+                academic_year = academic_years.first()
+                for grade_encode in grade_encodes:
+                    if grade_encode.grading_period == "FIRST_GRADING":
+                        period = {
+                            "grading_deadline": academic_year.first_grading_dealine,
+                            "is_override_encoding": grade_encode.is_enable
+                        }
+                    if grade_encode.grading_period == "SECOND_GRADING":
+                        period = {
+                            "grading_deadline": academic_year.second_grading_dealine,
+                            "is_override_encoding": grade_encode.is_enable
+                        }
+                    if grade_encode.grading_period == "THIRD_GRADING":
+                        period = {
+                            "grading_deadline": academic_year.third_grading_dealine,
+                            "is_override_encoding": grade_encode.is_enable
+                        }
+                    if grade_encode.grading_period == "FOURTH_GRADING":
+                        period = {
+                            "grading_deadline": academic_year.fourth_grading_dealine,
+                            "is_override_encoding": grade_encode.is_enable
+                        }
+
+                    grading_periods.append(period)
 
             data = {
                 "pk": str(user.pk),
@@ -76,6 +107,7 @@ class TeacherProfileView(generics.RetrieveAPIView):
                 "department": user_profile.department.name,
                 "profilePhoto": request.build_absolute_uri(user_profile.profile_photo.url) if user_profile.profile_photo else None,
                 "is_new_user": user_profile.user.is_new_user,
+                "grading_periods": grading_periods,
             }
 
             return response.Response(data, status=status.HTTP_200_OK)

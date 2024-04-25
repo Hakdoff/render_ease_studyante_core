@@ -11,6 +11,10 @@ class AcademicYear(BaseModelWithUUID):
     start_date = models.DateField()
     end_date = models.DateField()
     remarks = models.CharField(max_length=100, blank=True)
+    first_grading_dealine = models.DateField(null=True, blank=False)
+    second_grading_dealine = models.DateField(null=True, blank=False)
+    third_grading_dealine = models.DateField(null=True, blank=False)
+    fourth_grading_dealine = models.DateField(null=True, blank=False)
 
     class Meta:
         ordering = ['created_at']

@@ -7,7 +7,22 @@ from academic_record.models import AcademicYear, Schedule
 from base.admin import BaseAdmin
 from user_profile.models import Teacher
 from registration.models import Registration
-from .models import Subject, Department, Section
+from .models import Subject, Department, Section, GradeEncode
+
+
+@admin.register(GradeEncode)
+class GradeEncodeAdminView(BaseAdmin):
+    list_fields = ('grading_period', 'is_enable',)
+    search_fields = ('grading_period',)
+    list_filter = ['grading_period', 'is_enable']
+    edit_fields = (
+        ('Grade Encoding', {
+            'fields': [
+                'grading_period',
+                'is_enable',
+            ]
+        }),
+    )
 
 
 class ScheduleTabularInline(admin.TabularInline):
