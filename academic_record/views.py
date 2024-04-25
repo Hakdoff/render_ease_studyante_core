@@ -93,9 +93,9 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
 
     def create(self, request):
         # student will be aes 256
-        aes_256 = request.data.get('student', None)
+        student = request.data.get('student', None)
         academic_years = AcademicYear.objects.all()
-        student = None
+        # student = None
         if is_valid_uuid(student):
             if academic_years.exists():
                 # rsc = RSCodec(10)

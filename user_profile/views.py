@@ -78,22 +78,26 @@ class TeacherProfileView(generics.RetrieveAPIView):
                     if grade_encode.grading_period == "FIRST_GRADING":
                         period = {
                             "grading_deadline": academic_year.first_grading_dealine,
-                            "is_override_encoding": grade_encode.is_enable
+                            "is_override_encoding": grade_encode.is_enable,
+                            "grading_period": grade_encode.grading_period
                         }
                     if grade_encode.grading_period == "SECOND_GRADING":
                         period = {
                             "grading_deadline": academic_year.second_grading_dealine,
-                            "is_override_encoding": grade_encode.is_enable
+                            "is_override_encoding": grade_encode.is_enable,
+                            "grading_period": grade_encode.grading_period
                         }
                     if grade_encode.grading_period == "THIRD_GRADING":
                         period = {
                             "grading_deadline": academic_year.third_grading_dealine,
-                            "is_override_encoding": grade_encode.is_enable
+                            "is_override_encoding": grade_encode.is_enable,
+                            "grading_period": grade_encode.grading_period
                         }
                     if grade_encode.grading_period == "FOURTH_GRADING":
                         period = {
                             "grading_deadline": academic_year.fourth_grading_dealine,
-                            "is_override_encoding": grade_encode.is_enable
+                            "is_override_encoding": grade_encode.is_enable,
+                            "grading_period": grade_encode.grading_period
                         }
 
                     grading_periods.append(period)
