@@ -11,7 +11,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest
 import qrcode
 
-from aes.aes_implementation import encrypt
+# from aes.aes_implementation import encrypt
 from base.admin import BaseAdmin, BaseStackedInline, User
 from academic_record.models import AcademicYear, Schedule
 from ease_studyante_core import settings
