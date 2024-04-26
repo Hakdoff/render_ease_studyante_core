@@ -12,7 +12,3 @@ then
   python ./manage.py createsuperuser --no-input
 fi
 
-if [[ $ADD_CRON_JOB ]];
-then
-  python ./manage.py crontab add
-fi
