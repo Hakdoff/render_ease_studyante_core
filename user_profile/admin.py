@@ -132,7 +132,7 @@ class StudentCreationForm(forms.ModelForm):
             context_email = {
                 "full_name": f"{user.first_name} {user.last_name}",
                 "password": password,
-                "email_address": "jhonrhayparreno22@gmail.com"
+                "email_address": user.email
             }
 
             message = get_template(
@@ -140,7 +140,7 @@ class StudentCreationForm(forms.ModelForm):
 
             context = {
                 'email_body': message,
-                'to_email': "jhonrhayparreno22@gmail.com",
+                'to_email': user.email,
                 'email_subject': 'Welcome to EaseStudyante'
             }
 
