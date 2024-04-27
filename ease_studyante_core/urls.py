@@ -25,6 +25,9 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
 from chat import views as chat_views
 from dashboard.views import dashboard_detail_view, dashboard_view
 
@@ -59,8 +62,8 @@ urlpatterns = [
          auth_views.PasswordResetCompleteView.as_view(
              template_name='password_reset_complete.html'),
          name='password_reset_complete'),
-    path('', dashboard_view, name='dashboard'),
-    path('dashboard/', dashboard_detail_view, name='dash_detail')
+    path('', login_required(dashboard_view), name='dashboard'),
+    path('dashboard/', login_required(dashboard_detail_view), name='dash_detail')
 ]
 
 urlpatterns += router.urls
