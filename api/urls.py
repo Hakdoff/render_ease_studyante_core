@@ -65,14 +65,10 @@ urlpatterns += [
          name='teacher-assessments'),
     path('teacher/student/assessments', TeacherAssessmentStudentListView.as_view(),
          name='teacher-assessments-student'),
-
     path('teacher/web/assessments', TeacherAssessmentListView.as_view(),
          name='teacher-web-assessments'),
     path('teacher/attendance/timeout', TeacherAttendaceListCreateView.as_view(),
          name='teacher-attendance-timeout'),
-
-
-
     path('teacher/students/attendance', AttendanceTeacherListView.as_view(),
          name='teacher-students-attendance'),
     path('teacher/student/over-all-gpa', TeacherStudentOverAllGPAView.as_view(),
@@ -84,8 +80,7 @@ urlpatterns += [
 
 
 
-
-    # Parent Profile
+    # Parent
     path('parent/profile', ParentProfileView.as_view(),
          name='parent-profile'),
 ]
