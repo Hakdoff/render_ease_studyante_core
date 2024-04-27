@@ -77,7 +77,7 @@ class ScheduleAdmin(admin.ModelAdmin):
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ['student', 'schedule',  'is_present', 'attendance_date']
     search_fields = ['student__user__last_name', 'student__user__first_name',]
-    list_filter = ['student',]
+    list_filter = ['student', 'schedule',]
     formfield_querysets = {
         'student': lambda: Student.objects.all(),
         'schedule': lambda: Schedule.objects.all(),
