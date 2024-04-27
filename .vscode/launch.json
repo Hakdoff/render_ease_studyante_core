@@ -20,6 +20,7 @@
                 "EMAIL_HOST_PASSWORD": "lfeaocitwbcucamm",
                 "DATABASE_URL": "postgres://ease_studyante_db_user:penuNDRZqRrEOgLQTZDpV1Fso5w1L59Q@dpg-cnte5ansc6pc73cavle0-a.oregon-postgres.render.com/ease_studyante_db",
                 "DEBUG": "False",
+                "AES_SECRET_KEY": "8VNaCT2XGR0c5HNflDWYRx2rjFm6rWlrfu8in+D/cpzvoYXj"
             }
         }
     ]
