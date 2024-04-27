@@ -12,6 +12,7 @@ from django.http import HttpRequest
 import qrcode
 
 # from aes.aes_implementation import encrypt
+from aes.aes_implementation import encrypt
 from base.admin import BaseAdmin, BaseStackedInline, User
 from academic_record.models import AcademicYear, Schedule
 from ease_studyante_core import settings
@@ -102,24 +103,20 @@ class StudentCreationForm(forms.ModelForm):
                 box_size=10,
                 border=4,
             )
-            # rsc = RSCodec(10)
-            # user_id = str(user.pk)
-            # encoded = user_id.encode('utf-8')
-            # encoded_value = rsc.encode(bytearray(encoded))
 
             # You can pass any data you want to encode in the QR code
-            # encrypted = encrypt(user.pk, settings.AES_SECRET_KEY)
-            # aes_256 = f'{encrypted["cipher_text"]}${encrypted["salt"]}${encrypted["nonce"]}${encrypted["tag"]}'
+            encrypted = encrypt(str(instance.pk), settings.AES_SECRET_KEY)
+            aes_256 = f'{encrypted["cipher_text"]}${encrypted["salt"]}${encrypted["nonce"]}${encrypted["tag"]}'
 
             # pass the ase_256 F'String
-            qr.add_data(user.pk)
+            qr.add_data(aes_256)
             qr.make(fit=True)
             img = qr.make_image(fill_color="black", back_color="white")
 
             # Save QR code image to ImageField
             buffer = BytesIO()
             img.save(buffer)
-            file_name = f'qr_code_{user.pk}.png'
+            file_name = f'qr_code_{user.first_name}{user.last_name}.png'
             file_buffer = buffer.getvalue()
             instance.qr_code_photo.save(file_name, InMemoryUploadedFile(
                 file=BytesIO(file_buffer),

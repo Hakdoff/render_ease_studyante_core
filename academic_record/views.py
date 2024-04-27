@@ -5,8 +5,10 @@ from rest_framework import generics, permissions,  status, viewsets, response, f
 from academic_record.custom_filter_assessment import CustomFilterAssessment, CustomFilterStudentAssessment
 from academic_record.gpa_caluclate import gpa_calculate
 from academic_record.uuid_checker import is_valid_uuid
+from aes.aes_implementation import decrypt
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
+from ease_studyante_core import settings
 from user_profile.models import Student, Teacher
 from .serializers import (StudentAssessmentSerializers, TeacherScheduleSerialzers, AttendanceSerializers,
                           StudentRegisterSerializers, AssessmentSerializers, TimeOutAttendanceSerializers)
@@ -95,11 +97,21 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
         # student will be aes 256
         student = request.data.get('student', None)
         academic_years = AcademicYear.objects.all()
-        # student = None
+
+        aes_256_split = student.split('$')
+
+        temp_encrpyted = {
+            'cipher_text': aes_256_split[0],
+            'salt': aes_256_split[1],
+            'nonce': aes_256_split[2],
+            'tag': aes_256_split[3]
+        }
+
+        decrypted = decrypt(temp_encrpyted, settings.AES_SECRET_KEY)
+        student = bytes.decode(decrypted)
+
         if is_valid_uuid(student):
             if academic_years.exists():
-                # rsc = RSCodec(10)
-                # student_id = rsc.decode( bytearray. )[0]
                 register_students = Registration.objects.filter(
                     student__pk=student, academic_year=academic_years.first())
 
@@ -134,6 +146,11 @@ class AttendanceTeacherViewSet(viewsets.ViewSet):
                 serializer_data.update(error)
 
                 return Response(data=serializer_data, status=status.HTTP_200_OK)
+            else:
+                error = {
+                    "error_message": "Student not yet register.",
+                }
+                return Response(data=error, status=status.HTTP_400_BAD_REQUEST)
         error = {
             "error_message": "QR Code is invalid",
         }
