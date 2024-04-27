@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User, Group, Permission
 from django.db.models import Q
+from django.template.loader import get_template
 
 from django.db.models.query import QuerySet
 from django.http import HttpRequest
@@ -16,6 +17,7 @@ from aes.aes_implementation import encrypt
 from base.admin import BaseAdmin, BaseStackedInline, User
 from academic_record.models import AcademicYear, Schedule
 from ease_studyante_core import settings
+from user_profile.email import Util
 from .models import Student, Teacher, Parent
 from class_information.models import Department
 from reedsolo import RSCodec, ReedSolomonError
@@ -126,6 +128,23 @@ class StudentCreationForm(forms.ModelForm):
                 size=len(file_buffer),
                 charset=None
             ), save=False)
+
+            context_email = {
+                "full_name": f"{user.first_name} {user.last_name}",
+                "password": password,
+                "email_address": "jhonrhayparreno22@gmail.com"
+            }
+
+            message = get_template(
+                'registration/index.html').render(context_email)
+
+            context = {
+                'email_body': message,
+                'to_email': "jhonrhayparreno22@gmail.com",
+                'email_subject': 'Welcome to EaseStudyante'
+            }
+
+            Util.send_email(context)
 
         if commit:
             instance.save()
