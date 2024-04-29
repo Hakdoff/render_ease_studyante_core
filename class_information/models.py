@@ -31,15 +31,15 @@ class GradeEncode(BaseModelWithUUID):
 
 
 class Department(models.Model):
-    name = models.CharField(max_length=250)
-    code = models.CharField(max_length=50)
+    name = models.CharField(max_length=250, verbose_name="Department Name")
+    code = models.CharField(max_length=50, verbose_name="Department Code")
 
     def __str__(self) -> str:
         return f'{self.code} - {self.name}'
 
 
 class Section(BaseModelWithUUID):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, verbose_name="Section Name")
     year_level = models.CharField(
         max_length=10, choices=YEAR_LEVEL_CHOICES, default='GRADE 7')
 
@@ -48,7 +48,7 @@ class Section(BaseModelWithUUID):
 
 
 class Subject(BaseModelWithUUID):
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, verbose_name="Subject Name")
     code = models.CharField(max_length=10)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     year_level = models.CharField(

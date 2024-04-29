@@ -59,7 +59,7 @@ class Assessment(BaseModelWithUUID):
     academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, verbose_name="Assessment Name")
     assessment_type = models.CharField(
         max_length=50, choices=ASSESSMENT_TYPE_CHOICES, default='WRITTEN_WORKS')
     task_type = models.CharField(
