@@ -1,5 +1,5 @@
 from rest_framework import filters
-from django.db.models import Q, F
+from django.db.models import Q
 
 
 class CustomFilterAssessment(filters.BaseFilterBackend):

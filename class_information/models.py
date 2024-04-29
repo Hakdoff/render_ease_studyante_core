@@ -1,6 +1,6 @@
 from django.db import models
 from django.forms import ValidationError
-from base.models import BaseModelWithUUID
+from base.models import BaseModelWithUUID, User
 
 YEAR_LEVEL_CHOICES = [
     ('GRADE 7', 'GRADE 7'),
@@ -32,6 +32,8 @@ class GradeEncode(BaseModelWithUUID):
 
 
 class Department(models.Model):
+    department_head = models.ForeignKey(
+        User, on_delete=models.SET_NULL, blank=False, null=True)
     name = models.CharField(max_length=250, verbose_name="Department Name")
     code = models.CharField(max_length=50, verbose_name="Department Code")
 

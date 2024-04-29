@@ -5,6 +5,8 @@ from django.views.decorators.debug import sensitive_post_parameters
 from oauth2_provider.models import get_access_token_model
 from oauth2_provider.signals import app_authorized
 from oauth2_provider.views.base import TokenView
+from dal import autocomplete
+from django.db.models import Q
 
 from user_profile.models import Parent, Student, Teacher
 
@@ -64,3 +66,12 @@ class TokenViewWithUserId(TokenView):
         for k, v in headers.items():
             response[k] = v
         return response
+
+
+class TeacherAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Teacher.objects.select_related('user')
+        if self.q:
+            qs = qs.filter(Q(user__first_name__icontains=self.q) | Q(
+                user__last_name__icontains=self.q))
+        return qs

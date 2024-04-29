@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'channels',
     'admin_interface',
     'colorfield',
+    'dal',
+    'dal_select2',
 
     'django.contrib.admin',
     'django.contrib.auth',

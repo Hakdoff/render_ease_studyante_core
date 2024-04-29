@@ -5,9 +5,14 @@ from django.http import HttpRequest
 
 from academic_record.models import AcademicYear, Schedule
 from base.admin import BaseAdmin
+from base.models import User
 from user_profile.models import Teacher
 from registration.models import Registration
 from .models import Subject, Department, Section, GradeEncode
+from django.db.models import Q
+from django import forms
+from dal import autocomplete
+from django.urls import path
 
 
 @admin.register(GradeEncode)
@@ -55,19 +60,6 @@ class DepartmentAdminView(admin.ModelAdmin):
     list_filter = ('name', 'year_level',)
     inlines = [ScheduleTabularInline,]
     autocomplete_fields = ['department',]
-    edit_fields = (
-        ('Subject', {
-            'fields': [
-                'name',
-                'code',
-                'department',
-                'year_level',
-                'written_work',
-                'performance_task',
-                'quartery_assessment',
-            ]
-        }),
-    )
 
 
 class TeachersTabularInline(admin.TabularInline):
@@ -92,20 +84,50 @@ class TeachersTabularInline(admin.TabularInline):
         return qs
 
 
+class TeacherDepartmentHeadChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f'{obj.user.last_name} - {obj.user.first_name}'
+
+    def filter_queryset(self, value, queryset):
+        if value:
+            queryset = queryset.filter(Q(user__first_name__icontains=value) | Q(
+                user__last_name__icontains=value))
+        return queryset
+
+
+class DepartmentAdminForm(forms.ModelForm):
+    department_head = TeacherDepartmentHeadChoiceField(
+        queryset=Teacher.objects.select_related('user'),
+        widget=autocomplete.ModelSelect2(
+            url='teacher-autocomplete',
+            attrs={
+                'data-placeholder': 'Search for a teacher...',
+                'data-minimum-input-length': 2,
+            }
+        )
+    )
+
+    class Meta:
+        model = Department
+        fields = '__all__'
+
+
 @admin.register(Department)
 class DepartmentAdminView(admin.ModelAdmin):
     list_display = ['code', 'name']
-    search_fields = ['code', 'name']
-    list_filter = ('code', 'name')
+    search_fields = ['code', 'department_head__user__first_name',
+                     'department_head__user__last_name']
+
+    list_filter = ('code',)
     inlines = [TeachersTabularInline,]
-    edit_fields = (
-        ('Department', {
-            'fields': [
-                'code',
-                'name',
-            ]
-        }),
-    )
+    form = DepartmentAdminForm
+
+    class Media:
+        css = {
+            'all': ('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css',)
+        }
+        js = (
+            'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js',)
 
 
 class RegistrationTabularInline(admin.TabularInline):

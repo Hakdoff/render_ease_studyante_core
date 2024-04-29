@@ -25,14 +25,14 @@ from django.conf import settings
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 
-from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 
-from chat import views as chat_views
+from base.models import User
 from dashboard.views import dashboard_detail_view, dashboard_view
 
 from ease_studyante_core import settings
-from ease_studyante_core.views import TokenViewWithUserId
+from ease_studyante_core.views import TokenViewWithUserId, TeacherAutocomplete
+from dal import autocomplete
 
 
 schema_view = get_schema_view(
@@ -63,7 +63,9 @@ urlpatterns = [
              template_name='password_reset_complete.html'),
          name='password_reset_complete'),
     path('', login_required(dashboard_view), name='dashboard'),
-    path('dashboard/', login_required(dashboard_detail_view), name='dash_detail')
+    path('dashboard/', login_required(dashboard_detail_view), name='dash_detail'),
+    path('teacher-autocomplete/', TeacherAutocomplete.as_view(model=User),
+         name='teacher-autocomplete'),
 ]
 
 urlpatterns += router.urls
