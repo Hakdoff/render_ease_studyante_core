@@ -54,6 +54,7 @@ class DepartmentAdminView(admin.ModelAdmin):
     search_fields = ['name', 'year_level', 'code',]
     list_filter = ('name', 'year_level',)
     inlines = [ScheduleTabularInline,]
+    autocomplete_fields = ['department',]
     edit_fields = (
         ('Subject', {
             'fields': [
@@ -129,6 +130,7 @@ class RegistrationTabularInline(admin.TabularInline):
 
         return qs
 
+
 class SubjectTabularInline(admin.TabularInline):
     verbose_name = "Subject"
     verbose_name_plural = "Subjects"
@@ -150,7 +152,8 @@ class SubjectTabularInline(admin.TabularInline):
             return qs.filter(academic_year=academic_year)
 
         return qs
-    
+
+
 @admin.register(Section)
 class SectionAdminView(admin.ModelAdmin):
     list_display = ['name', 'year_level']
