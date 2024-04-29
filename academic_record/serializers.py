@@ -159,8 +159,7 @@ class TimeOutAttendanceSerializers(serializers.ModelSerializer):
 
 
 class ParentStudentListSerializers(serializers.ModelSerializer):
-    students = StudentSerializer(read_only=True, many=True)
 
     class Meta:
         model = Parent
-        fields = ['students',]
+        fields = ['__all__']

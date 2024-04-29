@@ -42,6 +42,12 @@ class BaseProfile(BaseModelWithUUID):
         return f'{self.user.last_name}- {self.user.first_name}'
 
 
+class Parent(BaseProfile):
+
+    def __str__(self):
+        return f'{self.user.last_name}- {self.user.first_name}'
+
+
 class Student(BaseProfile):
     YEAR_LEVEL_CHOICES = [
         ('GRADE 7', 'Grade 7'),
@@ -56,6 +62,8 @@ class Student(BaseProfile):
         max_length=10, choices=YEAR_LEVEL_CHOICES, default='GRADE 7')
     qr_code_photo = models.ImageField(
         upload_to='images/qr_code/', blank=False, null=False)
+    parent = models.ForeignKey(
+        Parent, on_delete=models.SET_NULL, blank=False, null=True)
 
     def __str__(self):
         return f'{self.user.last_name} - {self.user.first_name}'
@@ -64,14 +72,6 @@ class Student(BaseProfile):
 class Teacher(BaseProfile):
     department = models.ForeignKey(
         Department, related_name='teacher_department', on_delete=models.PROTECT)
-
-    def __str__(self):
-        return f'{self.user.last_name}- {self.user.first_name}'
-
-
-class Parent(BaseProfile):
-    students = models.ManyToManyField(
-        Student, 'kids')
 
     def __str__(self):
         return f'{self.user.last_name}- {self.user.first_name}'

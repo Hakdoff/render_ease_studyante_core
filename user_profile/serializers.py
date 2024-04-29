@@ -38,7 +38,6 @@ class ParentSerializer(serializers.ModelSerializer):
 
 class StudentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    parent = serializers.SerializerMethodField()
 
     class Meta:
         model = Student
@@ -52,7 +51,6 @@ class StudentSerializer(serializers.ModelSerializer):
             'profile_photo',
             'year_level',
             'qr_code_photo',
-            'parent',
         )
 
     def __init__(self, *args, **kwargs):
@@ -65,14 +63,6 @@ class StudentSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         photo_url = data.profile_photo.url
         return request.build_absolute_uri(photo_url)
-
-    def get_parent(self, instance):
-        parents = Parent.objects.filter(students__pk=instance.pk)
-        if parents.exists():
-            parent_serializer = ParentSerializer(parents.first())
-            return parent_serializer.data
-        else:
-            return None
 
 
 class TeacherSerializer(serializers.ModelSerializer):

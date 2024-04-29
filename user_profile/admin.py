@@ -302,6 +302,7 @@ class StudentAdmin(admin.ModelAdmin):
         'user': lambda: User.objects.all(),
     }
     readonly_fields = ['qr_code_photo']
+    autocomplete_fields = ['parent',]
     fieldsets = (
         ('Student Information', {
             'fields': [
@@ -312,6 +313,7 @@ class StudentAdmin(admin.ModelAdmin):
                 'address',
                 'age',
                 'gender',
+                'parent',
                 'year_level',
                 'profile_photo',
                 'qr_code_photo',
@@ -406,7 +408,6 @@ class ParentAdmin(BaseAdmin):
     list_filter = ['user__parent',]
     formfield_querysets = {
         'user': lambda: User.objects.all(),
-        'students': lambda: Student.objects.all()
     }
     edit_fields = (
         ('Parent Information', {
@@ -419,11 +420,9 @@ class ParentAdmin(BaseAdmin):
                 'gender',
                 'address',
                 'profile_photo',
-                'students'
             ]
         }),
     )
-    filter_vertical = ['students']
     search_fields = ('user__first_name', 'user__last_name')
 
     def get_form(self, request, obj=None, **kwargs):
