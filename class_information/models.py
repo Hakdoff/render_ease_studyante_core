@@ -52,7 +52,7 @@ class Section(BaseModelWithUUID):
 
 class Subject(BaseModelWithUUID):
     name = models.CharField(max_length=250, verbose_name="Subject Name")
-    code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10, verbose_name="Subject Code")
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     year_level = models.CharField(
         max_length=10, choices=YEAR_LEVEL_CHOICES, default='GRADE 7')
