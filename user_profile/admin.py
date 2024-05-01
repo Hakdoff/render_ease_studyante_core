@@ -31,7 +31,7 @@ from reedsolo import RSCodec, ReedSolomonError
     Student, Teacher and Parent are inherited in BaseProfile model
 """
 class AdminCreationForm(forms.ModelForm):
-    email = forms.CharField(label='Email', widget=forms.EmailInput)
+    email = forms.CharField(label='Email', widget=forms.EmailInput, validators=[EmailValidator(message='Invalid email address')])
     first_name = forms.CharField(label='First Name', widget=forms.TextInput)
     last_name = forms.CharField(label='Last Name', widget=forms.TextInput)
     contact_number = forms.CharField(label='Contact Number', widget=forms.TextInput)
@@ -45,6 +45,12 @@ class AdminCreationForm(forms.ModelForm):
         cleaned_data = super().clean()
         email = cleaned_data.get('email')
         contact_number = cleaned_data.get('contact_number')
+        
+        if email:
+            try:
+                EmailValidator()(email)  # Ensures it's a valid email format
+            except ValidationError:
+                self.add_error('email', 'Invalid email address')
 
         instance = getattr(self, 'instance', None)
 
