@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import Registration
 
 class RegistrationAdminForm(forms.ModelForm):
-
     class Meta:
         model = Registration
         fields = '__all__'
@@ -11,11 +10,12 @@ class RegistrationAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         student = cleaned_data.get('student')
+        academic_year = cleaned_data.get('academic_year')  # Ensure academic_year is in the form
 
-        if student:
-            # Check if the student is already registered
-            if Registration.objects.filter(student=student).exists():
-                self.add_error('student', 'This student is already registered.')
+        if student and academic_year:
+            # Check if the student is already registered in the same academic year
+            if Registration.objects.filter(student=student, academic_year=academic_year).exists():
+                self.add_error('student', 'This student is already registered for this academic year.')
         
         return cleaned_data
 
