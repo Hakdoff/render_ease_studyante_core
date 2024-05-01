@@ -14,6 +14,46 @@ from django import forms
 from dal import autocomplete
 from django.urls import path
 
+class SubjectAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = Subject
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        instance = getattr(self, 'instance', None)
+        subjectcode = cleaned_data.get('code')
+        
+        if instance and instance.pk:  # Check if instance exists and has a primary key
+            if Subject.objects.filter(code=subjectcode).exclude(pk=instance.pk).exists():
+                self.add_error('code', 'Subject Code already exists')
+        else:
+            if Subject.objects.filter(code=subjectcode).exists():
+                self.add_error('code', 'Subject Code already exists')
+
+        return cleaned_data
+
+class SectionAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = Section
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        instance = getattr(self, 'instance', None)
+        section_name = cleaned_data.get('name')
+        year_level = cleaned_data.get('year_level')
+        
+        if instance and instance.pk:  # Check if instance exists and has a primary key
+            if Section.objects.filter(name=section_name, year_level=year_level).exclude(pk=instance.pk).exists():
+                self.add_error('name', 'A section with this name already exists in this year level')
+        else:
+            if Section.objects.filter(name=section_name, year_level=year_level).exists():
+                self.add_error('name', 'A section with this name already exists in this year level')
+
+        return cleaned_data
 
 @admin.register(GradeEncode)
 class GradeEncodeAdminView(BaseAdmin):
@@ -54,10 +94,11 @@ class ScheduleTabularInline(admin.TabularInline):
 
 
 @admin.register(Subject)
-class DepartmentAdminView(admin.ModelAdmin):
+class SubjectAdminView(admin.ModelAdmin):
     list_display = ['name', 'code', 'department', 'year_level']
     search_fields = ['name', 'year_level', 'code',]
     list_filter = ('name', 'year_level',)
+    form = SubjectAdminForm
     inlines = [ScheduleTabularInline,]
     autocomplete_fields = ['department',]
 
@@ -82,7 +123,6 @@ class TeachersTabularInline(admin.TabularInline):
             return qs.filter(department__in=departments)
 
         return qs
-
 
 class TeacherDepartmentHeadChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
@@ -110,14 +150,32 @@ class DepartmentAdminForm(forms.ModelForm):
     class Meta:
         model = Department
         fields = '__all__'
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        instance = getattr(self, 'instance', None)
+        departmentcode = cleaned_data.get('code')
+        department_head = cleaned_data.get('department_head')
+        
+        if instance and instance.pk:  # Check if instance exists and has a primary key
+            if Department.objects.filter(code=departmentcode).exclude(pk=instance.pk).exists():
+                self.add_error('code', 'Department Code already exists')
+            if Department.objects.filter(department_head=department_head).exclude(pk=instance.pk).exists():
+                self.add_error('department_head', 'Department Head already exists')
+        else:
+            if Department.objects.filter(code=departmentcode).exists():
+                self.add_error('code', 'Department Code already exists')
+            if Department.objects.filter(department_head=department_head).exists():
+                self.add_error('department_head', 'Department Head already exists')
+
+        return cleaned_data
 
 
 @admin.register(Department)
 class DepartmentAdminView(admin.ModelAdmin):
-    list_display = ['code', 'name']
+    list_display = ['code', 'name', 'department_head']
     search_fields = ['code', 'department_head__user__first_name',
                      'department_head__user__last_name']
-
     list_filter = ('code',)
     inlines = [TeachersTabularInline,]
     form = DepartmentAdminForm
@@ -181,6 +239,7 @@ class SectionAdminView(admin.ModelAdmin):
     list_display = ['name', 'year_level']
     search_fields = ['name', 'year_level']
     list_filter = ('name', 'year_level')
+    form = SectionAdminForm
     inlines = [RegistrationTabularInline, SubjectTabularInline,]
     edit_fields = (
         ('Section Information', {
