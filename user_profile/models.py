@@ -40,7 +40,11 @@ class BaseProfile(BaseModelWithUUID):
 
     def __str__(self):
         return f'{self.user.last_name}- {self.user.first_name}'
+   
+class Admin(BaseProfile):
 
+    def __str__(self):
+        return f'{self.user.last_name}- {self.user.first_name}'
 
 class Parent(BaseProfile):
 
