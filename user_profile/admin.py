@@ -18,7 +18,7 @@ from base.admin import BaseAdmin, BaseStackedInline, User
 from academic_record.models import AcademicYear, Schedule
 from ease_studyante_core import settings
 from user_profile.email import Util
-from .models import Student, Teacher, Parent
+from .models import Admin, Student, Teacher, Parent
 from class_information.models import Department
 from reedsolo import RSCodec, ReedSolomonError
 
@@ -30,7 +30,101 @@ from reedsolo import RSCodec, ReedSolomonError
     
     Student, Teacher and Parent are inherited in BaseProfile model
 """
+class AdminCreationForm(forms.ModelForm):
+    email = forms.CharField(label='Email', widget=forms.EmailInput, validators=[EmailValidator(message='Invalid email address')])
+    first_name = forms.CharField(label='First Name', widget=forms.TextInput)
+    last_name = forms.CharField(label='Last Name', widget=forms.TextInput)
+    contact_number = forms.CharField(label='Contact Number', widget=forms.TextInput)
 
+    class Meta:
+        model = Admin
+        fields = '__all__'
+        exclude = ['user',]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        contact_number = cleaned_data.get('contact_number')
+        
+        if email:
+            try:
+                EmailValidator()(email)  # Ensures it's a valid email format
+            except ValidationError:
+                self.add_error('email', 'Invalid email address')
+
+        instance = getattr(self, 'instance', None)
+
+        if instance and instance.pk and instance.user_id:
+            user = User.objects.get(pk=instance.user.pk)
+
+            if User.objects.filter(username=email).exclude(username=user.email).exists():
+                self.add_error('email', 'Email already exists.')
+
+            if Admin.objects.exclude(user__email=user.email, contact_number=contact_number).filter(contact_number=contact_number).exists():
+                self.add_error('contact_number', 'Contact number already exists.')
+        else:
+            if User.objects.filter(username=email).exists():
+                self.add_error('email', 'Email already exists.')
+
+            if Admin.objects.filter(contact_number=contact_number).exists():
+                self.add_error('contact_number', 'Contact number already exists.')
+
+            if not contact_number.isdigit() or len(contact_number) != 11:
+                raise forms.ValidationError(('Contact number must be 11 digits.'), code='invalid')
+
+            # Ensure contact number starts with '09'
+            if not contact_number.startswith('09'):
+                raise forms.ValidationError(('Contact number must start with "09".'), code='invalid')
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        email = self.cleaned_data['email']
+        last_name = self.cleaned_data['last_name']
+        contact_number = self.cleaned_data.get('contact_number', '')
+
+        if instance.pk and instance.user_id:
+            user = User.objects.get(pk=instance.user.pk)
+            user.first_name = self.cleaned_data['first_name']
+            user.last_name = last_name
+            user.username = email
+            user.email = email
+
+        else:
+            last_4_digits = contact_number[-4:]
+            last_name += '_' * max(0, 4 - len(last_name))
+            password = (last_name[:4] + last_4_digits)
+
+            user = User.objects.create_user(
+                username=email,
+                password=password,
+                email=email,
+                first_name=self.cleaned_data['first_name'],
+                last_name=self.cleaned_data['last_name'],
+            )
+            instance.user = user
+        
+        context_email = {
+                "full_name": f"{user.first_name} {user.last_name}",
+                "password": password,
+                "email_address": user.email
+            }
+
+        message = get_template(
+                'registration/index.html').render(context_email)
+
+        context = {
+                'email_body': message,
+                'to_email': user.email,
+                'email_subject': 'Welcome to EaseStudyante'
+            }
+
+        Util.send_email(context)
+
+        if commit:
+            instance.save()
+        return instance
 
 class StudentCreationForm(forms.ModelForm):
     # Add fields for creating a new user
@@ -290,6 +384,39 @@ class ParentCreationForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+    
+@admin.register(Admin)
+class AdminAdmin(admin.ModelAdmin):
+    list_display = ('user', )
+    search_fields = ['user__first_name', 'user__last_name']
+    list_filter = ['user__admin',]
+    form = AdminCreationForm
+    formfield_querysets = {
+        'user': lambda: User.objects.all(),
+    }
+    fieldsets = (
+        ('Student Information', {
+            'fields': [
+                'email',
+                'first_name',
+                'last_name',
+                'contact_number',
+                'address',
+                'age',
+                'gender',
+                'profile_photo',
+            ],
+        }),
+    )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(AdminAdmin, self).get_form(request, obj, **kwargs)
+        if obj is not None:
+            if obj.user:
+                form.base_fields['first_name'].initial = obj.user.first_name
+                form.base_fields['last_name'].initial = obj.user.last_name
+                form.base_fields['email'].initial = obj.user.email
+        return form
 
 
 @admin.register(Student)
