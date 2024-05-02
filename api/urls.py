@@ -1,11 +1,12 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
+from chat.views import ChatMessageListView, ChatMessageRetrieveView, ChatSessionListCreateView, SearchChatUserListView
 from class_information.views import DepartmentListCreateView
 from user_profile.views import ChangePasswordView, RequestPasswordResetEmail, StudentProfileView, TeacherProfileView, ParentProfileView
 from academic_record.views import (
     TeacherScheduleListView, AttendanceTeacherViewSet, TeacherStudentAssessmentListView,
-    AttendanceTeacherListView, TeacherStudentOverAllGPAView, TeacherSearchStudentChatListView,
+    AttendanceTeacherListView, TeacherStudentOverAllGPAView, 
     TeacherAssessmentListView, TeacherAssessmentStudentListView, StudentAssessmentUpdateOrCreateView,
     TeacherAttendaceListCreateView)
 from academic_record.student_views import (
@@ -73,14 +74,21 @@ urlpatterns += [
          name='teacher-students-attendance'),
     path('teacher/student/over-all-gpa', TeacherStudentOverAllGPAView.as_view(),
          name='teacher-student-gpa'),
-    path('teacher/chat-list', TeacherSearchStudentChatListView.as_view(),
-         name='teacher-chat-list'),
     path('teacher/update-create-student-assessment', StudentAssessmentUpdateOrCreateView.as_view(),
          name='update-create-student-assessment'),
-
 
 
     # Parent
     path('parent/profile', ParentProfileView.as_view(),
          name='parent-profile'),
+
+     # Chat
+     path('chat-sessions', ChatSessionListCreateView.as_view(),
+          name='chat-sessions'),
+     path('chat-messages', ChatMessageListView.as_view(),
+          name='chat-messages'),
+     path('chat-session/retrieve', ChatMessageRetrieveView.as_view(),
+     name='chat-session'),
+     path('chat-sessions/search', SearchChatUserListView.as_view(),
+          name='chat-sessions-search'),
 ]

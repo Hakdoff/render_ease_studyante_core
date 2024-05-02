@@ -6,14 +6,12 @@ from academic_record.custom_filter_assessment import CustomFilterAssessment, Cus
 from academic_record.gpa_caluclate import gpa_calculate
 from academic_record.uuid_checker import is_valid_uuid
 from aes.aes_implementation import decrypt
-from base.models import User
 from class_information.models import Subject
 from core.paginate import ExtraSmallResultsSetPagination
 from ease_studyante_core import settings
-from user_profile.models import Parent, Student, Teacher
-from user_profile.serializers import UserSerializer
+from user_profile.models import  Student, Teacher
 from .serializers import (StudentAssessmentSerializers, TeacherScheduleSerialzers, AttendanceSerializers,
-                          StudentRegisterSerializers, AssessmentSerializers, TimeOutAttendanceSerializers)
+                           AssessmentSerializers, TimeOutAttendanceSerializers)
 from .models import Schedule, AcademicYear, Attendance, StudentAssessment, Assessment
 from registration.models import Registration
 from rest_framework.response import Response
@@ -349,40 +347,6 @@ class TeacherStudentOverAllGPAView(APIView):
         return response.Response(data, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TeacherSearchStudentChatListView(generics.ListAPIView):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                'q',
-                openapi.IN_QUERY,
-                description='Query params for student search it will be based on first_name and last_name',
-                type=openapi.TYPE_STRING
-            )
-        ],
-        operation_id='list_students'
-    )
-    def get_queryset(self):
-        q = self.request.GET.get('q', None)
-
-        user = self.request.user
-        # schedules = Schedule.objects.filter(
-        #     teacher__user=user).values('section')
-
-        # if schedules.exists():
-        #     registered_students = []
-        #     parents = []
-        #     if student:
-        #         registered_students = Registration.objects.filter(Q(section__pk__in=schedules) & Q(Q(student__user__first_name__icontains=student) | Q(student__user__last_name__icontains=student))).order_by('student__user__lastname').values('student__user')
-        #     if parent:
-        #         parents = Parent.objects.all().values('user')
-        if q:
-            return User.objects.filter(Q(Q(first_name__icontains=q) | Q(last_name__icontains=q))).order_by('last_name')
-
-        return []
 
 
 class TeacherAssessmentListView(generics.ListAPIView):
