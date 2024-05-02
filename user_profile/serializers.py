@@ -128,3 +128,4 @@ class StudentOnlySerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         photo_url = data.profile_photo.url
         return request.build_absolute_uri(photo_url)
+

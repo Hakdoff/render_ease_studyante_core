@@ -2,6 +2,10 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.utils import timezone
 
+from base.models import User
+from chat.models import ChatMessage, ChatSession
+from asgiref.sync import sync_to_async
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -30,6 +34,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json.get('message')
         username = text_data_json["username"]
+        session_id = text_data_json["id"]
 
         if message and hasattr(self, 'room_group_name'):
             await self.channel_layer.group_send(
@@ -37,11 +42,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "sendMessage",
                     "message": message,
                     "username": username,
+                    "session_id": session_id,
                 })
 
     async def sendMessage(self, event):
         # TODO handle save messages
         message = event["message"]
         username = event["username"]
+        session_id = event["session_id"]
         time_stamp = timezone.now().strftime('%Y-%m-%dT%H:%M:%S.%f')
+        
+        chat_session = await sync_to_async(ChatSession.objects.get)(pk=session_id)
+        user = await sync_to_async(User.objects.get)(username=username)
+        
+        await sync_to_async(ChatMessage.objects.create)(chat_session=chat_session, user=user, message=message)
+        
         await self.send(text_data=json.dumps({"message": message, "username": username, "time_stamp": time_stamp}))
+   
