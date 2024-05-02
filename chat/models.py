@@ -5,10 +5,8 @@ from user_profile.models import Student, Parent, Teacher
 
 class ChatSession(BaseModelWithUUID):
     room_name = models.CharField(max_length=255)
-    student = models.ForeignKey(
+    person = models.ForeignKey(
         Student, on_delete=models.CASCADE, null=True, blank=True, related_name='chat_sessions_student')
-    parent = models.ForeignKey(
-        Teacher, on_delete=models.CASCADE, null=True, blank=True, related_name='chat_sessions_parent')
     teacher = models.ForeignKey(
         Teacher, on_delete=models.CASCADE, related_name='chat_sessions_teacher')
 

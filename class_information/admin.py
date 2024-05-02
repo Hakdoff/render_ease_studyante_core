@@ -126,25 +126,26 @@ class TeachersTabularInline(admin.TabularInline):
 
 class TeacherDepartmentHeadChoiceField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
-        return f'{obj.user.last_name} - {obj.user.first_name}'
+        return f'{obj.last_name} - {obj.first_name}'
 
     def filter_queryset(self, value, queryset):
         if value:
-            queryset = queryset.filter(Q(user__first_name__icontains=value) | Q(
-                user__last_name__icontains=value))
+            queryset = queryset.filter(Q(first_name__icontains=value) | Q(
+                last_name__icontains=value))
         return queryset
 
 
 class DepartmentAdminForm(forms.ModelForm):
     department_head = TeacherDepartmentHeadChoiceField(
-        queryset=Teacher.objects.select_related('user'),
+        queryset=User.objects.all(),
         widget=autocomplete.ModelSelect2(
             url='teacher-autocomplete',
             attrs={
                 'data-placeholder': 'Search for a teacher...',
                 'data-minimum-input-length': 2,
             }
-        )
+        ),
+        required=False
     )
 
     class Meta:

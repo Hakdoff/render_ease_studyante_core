@@ -33,7 +33,7 @@ class GradeEncode(BaseModelWithUUID):
 
 class Department(models.Model):
     department_head = models.ForeignKey(
-        User, on_delete=models.SET_NULL, blank=False, null=True)
+        User, on_delete=models.SET_NULL, blank=True, null=True)
     name = models.CharField(max_length=250, verbose_name="Department Name")
     code = models.CharField(max_length=50, verbose_name="Department Code")
 

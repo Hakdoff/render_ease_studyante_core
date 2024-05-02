@@ -18,9 +18,12 @@
                 "EMAIL_HOST_USER": "erbfrt@gmail.com",
                 "DEFAULT_FROM_EMAIL": "erbfrt@gmail.com",
                 "EMAIL_HOST_PASSWORD": "gxmrzieamkdnlqpx",
-                "DATABASE_URL": "postgres://ease_studyante_db_user:penuNDRZqRrEOgLQTZDpV1Fso5w1L59Q@dpg-cnte5ansc6pc73cavle0-a.oregon-postgres.render.com/ease_studyante_db",
+                "DATABASE_URL": "postgres://ease_studyante_db_xz27_user:fwtzjxMkZLkzcpanKGbUteEFk3RPm3TL@dpg-cntegin109ks73b5pdug-a.oregon-postgres.render.com/ease_studyante_db_xz27",
                 "DEBUG": "False",
-                "AES_SECRET_KEY": "8VNaCT2XGR0c5HNflDWYRx2rjFm6rWlrfu8in+D/cpzvoYXj"
+                "AES_SECRET_KEY": "8VNaCT2XGR0c5HNflDWYRx2rjFm6rWlrfu8in+D/cpzvoYXj",
+                "GOOGLE_APPLICATION_CREDENTIALS": "./application_default_credentials.json",
+                "GOOGLE_CLOUD_PROJECT": "110868374692809882456"
+                // "TEST": "easestudyante-4ad26"
             }
         }
     ]

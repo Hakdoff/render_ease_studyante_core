@@ -8,6 +8,7 @@ from oauth2_provider.views.base import TokenView
 from dal import autocomplete
 from django.db.models import Q
 
+from base.models import User
 from user_profile.models import Parent, Student, Teacher
 
 
@@ -70,8 +71,9 @@ class TokenViewWithUserId(TokenView):
 
 class TeacherAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
-        qs = Teacher.objects.select_related('user')
+        teachers = Teacher.objects.all().values('user__pk')
+        qs = User.objects.filter(pk__in=teachers)
         if self.q:
-            qs = qs.filter(Q(user__first_name__icontains=self.q) | Q(
-                user__last_name__icontains=self.q))
+            qs = qs.filter(Q(first_name__icontains=self.q) | Q(
+                last_name__icontains=self.q))
         return qs
